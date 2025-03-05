@@ -2,7 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/gopxl/beep/flac"
+	"github.com/gopxl/beep/speaker"
 )
 
 // App struct
@@ -21,7 +26,17 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) Play(title string) error {
+	f, err := os.Open(title + ".flac")
+	if err != nil {
+		log.Fatal(err)
+	}
+	streamer, format, err := flac.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer streamer.Close()
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	speaker.Play(streamer)
+	select {}
 }
