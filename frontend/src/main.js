@@ -1,21 +1,34 @@
-import './style.css';
-import './app.css';
+import './style.css'
+import './app.css'
 
-import { Play } from '../wailsjs/go/main/App';
+import { GetDirPath } from '../wailsjs/go/main/App'
+import { GetAlbums } from '../wailsjs/go/main/App'
 
 document.querySelector('#app').innerHTML = `
 	<div class="input-box" id="player">
-		Enter name: <input type="text" id="name"/>
-        <button class="btn" onclick="play()">Play</button>
-	</div>
-`;
+		<button class="btn" onclick="selectDirectory()">Select</button>
+ </div>
+`
 
-window.play = function() {
-	let name = document.getElementById("name")["value"]
-	console.log(name)
+window.selectDirectory = async function () {
 	try {
-		Play(name);
+		const dirPath = await GetDirPath()
+		if (!dirPath) {
+			console.log("User canceled directory selection");
+			return;
+		}
+		console.log("Selected directory:", dirPath);
+		try {
+			let albums = GetAlbums(dirPath)
+			displayAlbums(albums);
+		} catch(err) {
+			console.error("Error importing directory:", err);
+		}
 	} catch (err) {
-		console.error(err);
+		console.error("Error selecting directory:", err);
 	}
+}
+
+function displayAlbums(albums) {
+	console.log(albums)
 }

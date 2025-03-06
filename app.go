@@ -3,40 +3,32 @@ package main
 import (
 	"context"
 	"log"
-	"os"
-	"time"
+	"mango/backend/catalog"
 
-	"github.com/gopxl/beep/flac"
-	"github.com/gopxl/beep/speaker"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
 type App struct {
 	ctx context.Context
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) Play(title string) error {
-	f, err := os.Open(title + ".flac")
+func (a *App) GetDirPath() (string, error) {
+	dirPath, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
 	if err != nil {
-		log.Fatal(err)
+		log.Print("Problem reading directory.")
+		return "", err
 	}
-	streamer, format, err := flac.Decode(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer streamer.Close()
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	speaker.Play(streamer)
-	select {}
+	return dirPath, nil
+}
+
+func (a *App) GetAlbums(fp string) ([]string, error) {
+	return catalog.GetAlbums(fp)
 }
