@@ -30,5 +30,5 @@ func (a *App) GetDirPath() (string, error) {
 }
 
 func (a *App) GetAlbums(fp string) ([]string, error) {
-	return catalog.GetAlbums(fp)
+	return catalog.FetchDirectories(fp)
 }

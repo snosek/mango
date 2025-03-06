@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-func GetAlbums(fp string) ([]string, error) {
+func FetchDirectories(fp string) ([]string, error) {
 	entries, err := os.ReadDir(fp)
 	if err != nil {
 		log.Info(err.Error())
