@@ -26,6 +26,7 @@ func (a *App) GetAlbums(fp string) ([]string, error) {
 	return utils.GetDirectories(fp)
 }
 
-func (a *App) GetTrackInfo(fp string) map[string][]string {
-	return catalog.GetTrackInfo(fp)
+func (a *App) GetTrackInfo(fp string) catalog.Track {
+	t := catalog.NewTrack(fp)
+	return t
 }
