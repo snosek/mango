@@ -2,68 +2,45 @@ package utils
 
 import (
 	"context"
-	"errors"
-	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func GetDirPath(ctx context.Context) (string, error) {
-	dirPath, err := runtime.OpenDirectoryDialog(ctx, runtime.OpenDialogOptions{})
-	if err != nil {
-		log.Print("Problem reading directory.")
-		return "", err
-	}
-	return dirPath, nil
+	return runtime.OpenDirectoryDialog(ctx, runtime.OpenDialogOptions{})
 }
 
 func FetchDirectories(fp string) ([]string, error) {
 	entries, err := os.ReadDir(fp)
 	if err != nil {
-		log.Print(err.Error())
 		return nil, err
 	}
-	result := make([]string, 0)
+	var dirs []string
 	for _, f := range entries {
 		if f.IsDir() {
-			result = append(result)
+			dirs = append(dirs, filepath.Join(fp, f.Name()))
 		}
 	}
-	return result, nil
+	return dirs, nil
 }
 
 func FetchAudioFiles(dirPath string) ([]string, error) {
 	entries, err := os.ReadDir(dirPath)
 	if err != nil {
-		log.Print(err.Error())
 		return nil, err
 	}
-	result := make([]string, 0)
-	err = nil
+	var audioFiles []string
 	for _, f := range entries {
-		if !isAudioFile(f.Name()) {
-			err = errors.New("Unsupported file type")
-			continue
+		if isAudioFile(f.Name()) {
+			audioFiles = append(audioFiles, filepath.Join(dirPath, f.Name()))
 		}
-		result = append(result, filepath.Join(dirPath, f.Name()))
 	}
-	return result, err
+	return audioFiles, nil
 }
 
 func isAudioFile(fileName string) bool {
-	switch {
-	case strings.HasSuffix(fileName, ".flac"):
-		fallthrough
-	case strings.HasSuffix(fileName, ".mp3"):
-		fallthrough
-	case strings.HasSuffix(fileName, ".wav"):
-		fallthrough
-	case strings.HasSuffix(fileName, ".ogg"):
-		return true
-	default:
-		return false
-	}
+	ext := filepath.Ext(fileName)
+	return ext == ".flac" || ext == ".mp3" || ext == ".wav" || ext == ".ogg"
 }

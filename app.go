@@ -28,13 +28,13 @@ func (a *App) GetAlbums(fp string) ([]string, error) {
 	return utils.FetchDirectories(fp)
 }
 
-func (a *App) GetTrackInfo(fp string) catalog.Track {
+func (a *App) GetTrack(fp string) catalog.Track {
 	t := catalog.NewTrack(fp)
 	return t
 }
 
 func (a *App) GetAlbum(fp string) catalog.Album {
-	album := catalog.NewAlbum(fp)
+	album, _ := catalog.NewAlbum(fp)
 	JSONAlbum, _ := json.Marshal(album)
 	os.WriteFile("test/test.json", JSONAlbum, 0666)
 	return album

@@ -1,7 +1,6 @@
 package catalog
 
 import (
-	"log"
 	"strconv"
 	"time"
 
@@ -34,26 +33,27 @@ func NewTrack(fp string) Track {
 
 func (t Track) FetchTrackMetadata() *TrackMetadata {
 	meta := &TrackMetadata{Filepath: t.Metadata.Filepath}
+
 	tags := t.FetchTrackTags()
-	meta.Title = tags["TITLE"][0]
-	meta.Artist = tags["ARTIST"]
-	meta.Genre = tags["GENRE"]
-	trackNumber, err := strconv.Atoi(tags["TRACKNUMBER"][0])
-	if err != nil {
-		log.Print("Error parsing track number.")
+	if tags != nil {
+		meta.Title = tags["TITLE"][0]
+		meta.Artist = tags["ARTIST"]
+		meta.Genre = tags["GENRE"]
+		if trackNum, err := strconv.Atoi(tags["TRACKNUMBER"][0]); err == nil {
+			meta.TrackNumber = uint(trackNum)
+		}
 	}
-	meta.TrackNumber = uint(trackNumber)
 
 	props := t.FetchTrackProperties()
 	meta.Length = props.Length
 	meta.SampleRate = props.SampleRate
+
 	return meta
 }
 
 func (t Track) FetchTrackTags() map[string][]string {
 	tags, err := taglib.ReadTags(t.Metadata.Filepath)
 	if err != nil {
-		log.Print("Error reading tags: ", err.Error())
 		return nil
 	}
 	return tags
@@ -62,7 +62,6 @@ func (t Track) FetchTrackTags() map[string][]string {
 func (t Track) FetchTrackProperties() taglib.Properties {
 	props, err := taglib.ReadProperties(t.Metadata.Filepath)
 	if err != nil {
-		log.Print("Error reading properties: ", err.Error())
 		return taglib.Properties{}
 	}
 	return props

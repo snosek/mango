@@ -1,8 +1,6 @@
 package catalog
 
 import (
-	"errors"
-	"log"
 	"mango/backend/utils"
 )
 
@@ -20,32 +18,29 @@ type Album struct {
 	Tracks   map[string]*Track
 }
 
-func NewAlbum(fp string) Album {
-	a := Album{
+func NewAlbum(fp string) (Album, error) {
+	album := Album{
 		Metadata: &AlbumMetadata{
 			Filepath: fp,
 		},
 	}
-	tracks, err := a.FetchTracks()
-	log.Println(tracks)
+	tracks, err := album.FetchTracks()
 	if err != nil {
-		log.Println(err.Error())
+		return album, err
 	}
-	a.Tracks = tracks
-	return a
+	album.Tracks = tracks
+	return album, nil
 }
 
 func (a Album) FetchTracks() (map[string]*Track, error) {
 	trackPaths, err := utils.FetchAudioFiles(a.Metadata.Filepath)
-	returnErr := errors.New("")
 	if err != nil {
-		returnErr = err
+		return nil, err
 	}
-	result := make(map[string]*Track, 0)
+	tracks := make(map[string]*Track)
 	for _, fp := range trackPaths {
 		t := NewTrack(fp)
-		result[t.Metadata.Title] = &t
+		tracks[t.Metadata.Title] = &t
 	}
-	log.Println(result)
-	return result, returnErr
+	return tracks, nil
 }

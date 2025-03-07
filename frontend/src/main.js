@@ -3,7 +3,6 @@ import './app.css'
 
 import { GetDirPath } from '../wailsjs/go/main/App'
 import { GetAlbums } from '../wailsjs/go/main/App'
-import { GetTrackInfo } from '../wailsjs/go/main/App'
 import { GetAlbum } from '../wailsjs/go/main/App'
 
 document.querySelector('#app').innerHTML = `
