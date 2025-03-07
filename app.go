@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"mango/backend/catalog"
 	"mango/backend/utils"
+	"os"
 )
 
 type App struct {
@@ -23,10 +25,17 @@ func (a *App) GetDirPath() (string, error) {
 }
 
 func (a *App) GetAlbums(fp string) ([]string, error) {
-	return utils.GetDirectories(fp)
+	return utils.FetchDirectories(fp)
 }
 
 func (a *App) GetTrackInfo(fp string) catalog.Track {
 	t := catalog.NewTrack(fp)
 	return t
+}
+
+func (a *App) GetAlbum(fp string) catalog.Album {
+	album := catalog.NewAlbum(fp)
+	JSONAlbum, _ := json.Marshal(album)
+	os.WriteFile("test.json", JSONAlbum, 0666)
+	return album
 }

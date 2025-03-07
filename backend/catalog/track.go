@@ -33,7 +33,7 @@ func NewTrack(fp string) Track {
 }
 
 func (t Track) SetTrackMetadata() {
-	meta := t.GetTrackTags()
+	meta := t.FetchTrackTags()
 	t.Metadata.Title = meta["TITLE"][0]
 	t.Metadata.Artist = meta["ARTIST"]
 	t.Metadata.Genre = meta["GENRE"]
@@ -42,12 +42,13 @@ func (t Track) SetTrackMetadata() {
 		log.Print("Error parsing track number.")
 	}
 	t.Metadata.TrackNumber = uint(trackNumber)
-	props := t.GetTrackProperties()
+
+	props := t.FetchTrackProperties()
 	t.Metadata.Length = props.Length
 	t.Metadata.SampleRate = props.SampleRate
 }
 
-func (t Track) GetTrackTags() map[string][]string {
+func (t Track) FetchTrackTags() map[string][]string {
 	tags, err := taglib.ReadTags(t.Metadata.Filepath)
 	if err != nil {
 		log.Print("Error reading tags: ", err.Error())
@@ -56,7 +57,7 @@ func (t Track) GetTrackTags() map[string][]string {
 	return tags
 }
 
-func (t Track) GetTrackProperties() taglib.Properties {
+func (t Track) FetchTrackProperties() taglib.Properties {
 	props, err := taglib.ReadProperties(t.Metadata.Filepath)
 	if err != nil {
 		log.Print("Error reading properties: ", err.Error())

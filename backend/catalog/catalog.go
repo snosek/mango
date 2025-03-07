@@ -1,6 +1,6 @@
 package catalog
 
 type Catalog struct {
-	albums map[string]*Album
-	tracks map[string]*Track
+	Albums map[string]*Album
+	Tracks map[string]*Track
 }
