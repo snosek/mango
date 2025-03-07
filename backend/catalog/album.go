@@ -31,7 +31,7 @@ func NewAlbum(fp string) Album {
 	if err != nil {
 		log.Println(err.Error())
 	}
-	a.SetTracks(tracks)
+	a.Tracks = tracks
 	return a
 }
 
@@ -48,8 +48,4 @@ func (a Album) FetchTracks() (map[string]*Track, error) {
 	}
 	log.Println(result)
 	return result, returnErr
-}
-
-func (a *Album) SetTracks(t map[string]*Track) {
-	a.Tracks = t
 }

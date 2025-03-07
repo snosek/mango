@@ -28,24 +28,26 @@ func NewTrack(fp string) Track {
 			Filepath: fp,
 		},
 	}
-	t.SetTrackMetadata()
+	t.Metadata = t.FetchTrackMetadata()
 	return t
 }
 
-func (t Track) SetTrackMetadata() {
-	meta := t.FetchTrackTags()
-	t.Metadata.Title = meta["TITLE"][0]
-	t.Metadata.Artist = meta["ARTIST"]
-	t.Metadata.Genre = meta["GENRE"]
-	trackNumber, err := strconv.Atoi(meta["TRACKNUMBER"][0])
+func (t Track) FetchTrackMetadata() *TrackMetadata {
+	meta := &TrackMetadata{Filepath: t.Metadata.Filepath}
+	tags := t.FetchTrackTags()
+	meta.Title = tags["TITLE"][0]
+	meta.Artist = tags["ARTIST"]
+	meta.Genre = tags["GENRE"]
+	trackNumber, err := strconv.Atoi(tags["TRACKNUMBER"][0])
 	if err != nil {
 		log.Print("Error parsing track number.")
 	}
-	t.Metadata.TrackNumber = uint(trackNumber)
+	meta.TrackNumber = uint(trackNumber)
 
 	props := t.FetchTrackProperties()
-	t.Metadata.Length = props.Length
-	t.Metadata.SampleRate = props.SampleRate
+	meta.Length = props.Length
+	meta.SampleRate = props.SampleRate
+	return meta
 }
 
 func (t Track) FetchTrackTags() map[string][]string {

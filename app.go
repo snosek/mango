@@ -36,6 +36,6 @@ func (a *App) GetTrackInfo(fp string) catalog.Track {
 func (a *App) GetAlbum(fp string) catalog.Album {
 	album := catalog.NewAlbum(fp)
 	JSONAlbum, _ := json.Marshal(album)
-	os.WriteFile("test.json", JSONAlbum, 0666)
+	os.WriteFile("test/test.json", JSONAlbum, 0666)
 	return album
 }
