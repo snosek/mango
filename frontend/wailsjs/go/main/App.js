@@ -9,3 +9,7 @@ export function GetAlbums(arg1) {
 export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }
+
+export function GetTrackInfo(arg1) {
+  return window['go']['main']['App']['GetTrackInfo'](arg1);
+}

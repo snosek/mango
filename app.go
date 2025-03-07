@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
 	"mango/backend/catalog"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"mango/backend/utils"
 )
 
 type App struct {
@@ -21,14 +19,13 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) GetDirPath() (string, error) {
-	dirPath, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
-	if err != nil {
-		log.Print("Problem reading directory.")
-		return "", err
-	}
-	return dirPath, nil
+	return utils.GetDirPath(a.ctx)
 }
 
 func (a *App) GetAlbums(fp string) ([]string, error) {
-	return catalog.FetchDirectories(fp)
+	return utils.GetDirectories(fp)
+}
+
+func (a *App) GetTrackInfo(fp string) map[string][]string {
+	return catalog.GetTrackInfo(fp)
 }
