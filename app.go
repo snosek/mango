@@ -39,3 +39,11 @@ func (a *App) GetAlbum(fp string) catalog.Album {
 	os.WriteFile("test/test.json", JSONAlbum, 0666)
 	return album
 }
+
+func (a *App) GetCatalog(fp string) catalog.Catalog {
+	cat, err := catalog.NewCatalog(fp)
+	if err != nil {
+		return catalog.Catalog{}
+	}
+	return cat
+}

@@ -10,6 +10,10 @@ export function GetAlbums(arg1) {
   return window['go']['main']['App']['GetAlbums'](arg1);
 }
 
+export function GetCatalog(arg1) {
+  return window['go']['main']['App']['GetCatalog'](arg1);
+}
+
 export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }
