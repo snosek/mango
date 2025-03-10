@@ -8,45 +8,45 @@ import (
 )
 
 type Track struct {
-	Filepath    string
 	Title       string
 	Artist      []string
 	Genre       []string
 	TrackNumber uint
 	Length      time.Duration
 	SampleRate  uint
+	Filepath    string
 }
 
 func NewTrack(fp string) Track {
 	t := Track{
 		Filepath: fp,
 	}
-	t.FetchTrackMetadata()
+	t.SetMetadata()
 	return t
 }
 
-func (t *Track) FetchTrackMetadata() {
-	tags := t.FetchTrackTags()
+func (t *Track) SetMetadata() {
+	tags := t.FetchTags()
 	if tags == nil {
 		return
 	}
-	if tags["TITLE"] != nil {
-		t.Title = tags["TITLE"][0]
+	if tags[taglib.Title] != nil {
+		t.Title = tags[taglib.Title][0]
 	}
-	if tags["TRACKNUMBER"] != nil {
-		if trackNum, err := strconv.Atoi(tags["TRACKNUMBER"][0]); err == nil {
+	if tags[taglib.TrackNumber] != nil {
+		if trackNum, err := strconv.Atoi(tags[taglib.TrackNumber][0]); err == nil {
 			t.TrackNumber = uint(trackNum)
 		}
 	}
-	t.Artist = tags["ARTIST"]
-	t.Genre = tags["GENRE"]
+	t.Artist = tags[taglib.Artist]
+	t.Genre = tags[taglib.Genre]
 
-	props := t.FetchTrackProperties()
+	props := t.FetchProperties()
 	t.Length = props.Length
 	t.SampleRate = props.SampleRate
 }
 
-func (t Track) FetchTrackTags() map[string][]string {
+func (t Track) FetchTags() map[string][]string {
 	tags, err := taglib.ReadTags(t.Filepath)
 	if err != nil {
 		return nil
@@ -54,7 +54,7 @@ func (t Track) FetchTrackTags() map[string][]string {
 	return tags
 }
 
-func (t Track) FetchTrackProperties() taglib.Properties {
+func (t Track) FetchProperties() taglib.Properties {
 	props, err := taglib.ReadProperties(t.Filepath)
 	if err != nil {
 		return taglib.Properties{}

@@ -1,13 +1,13 @@
 export namespace catalog {
 	
 	export class Track {
-	    Filepath: string;
 	    Title: string;
 	    Artist: string[];
 	    Genre: string[];
 	    TrackNumber: number;
 	    Length: number;
 	    SampleRate: number;
+	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Track(source);
@@ -15,40 +15,22 @@ export namespace catalog {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Filepath = source["Filepath"];
 	        this.Title = source["Title"];
 	        this.Artist = source["Artist"];
 	        this.Genre = source["Genre"];
 	        this.TrackNumber = source["TrackNumber"];
 	        this.Length = source["Length"];
 	        this.SampleRate = source["SampleRate"];
+	        this.Filepath = source["Filepath"];
 	    }
 	}
-	export class AlbumMetadata {
-	    Filepath: string;
+	export class Album {
 	    Title: string;
 	    Artist: string[];
 	    Genre: string[];
 	    Length: number;
-	    SampleRate: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new AlbumMetadata(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Filepath = source["Filepath"];
-	        this.Title = source["Title"];
-	        this.Artist = source["Artist"];
-	        this.Genre = source["Genre"];
-	        this.Length = source["Length"];
-	        this.SampleRate = source["SampleRate"];
-	    }
-	}
-	export class Album {
-	    Metadata?: AlbumMetadata;
 	    Tracks: Track[];
+	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Album(source);
@@ -56,8 +38,12 @@ export namespace catalog {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Metadata = this.convertValues(source["Metadata"], AlbumMetadata);
+	        this.Title = source["Title"];
+	        this.Artist = source["Artist"];
+	        this.Genre = source["Genre"];
+	        this.Length = source["Length"];
 	        this.Tracks = this.convertValues(source["Tracks"], Track);
+	        this.Filepath = source["Filepath"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -78,7 +64,6 @@ export namespace catalog {
 		    return a;
 		}
 	}
-	
 
 }
 
