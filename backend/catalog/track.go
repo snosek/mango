@@ -10,7 +10,6 @@ import (
 type Track struct {
 	Title       string
 	Artist      []string
-	Genre       []string
 	TrackNumber uint
 	Length      time.Duration
 	SampleRate  uint
@@ -39,7 +38,6 @@ func (t *Track) SetMetadata() {
 		}
 	}
 	t.Artist = tags[taglib.Artist]
-	t.Genre = tags[taglib.Genre]
 
 	props := t.FetchProperties()
 	t.Length = props.Length

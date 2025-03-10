@@ -38,7 +38,7 @@ func (a *Album) SetMetadata() {
 	if tags[taglib.Album] != nil {
 		a.Title = tags[taglib.Album][0]
 	}
-	a.Artist = tags[taglib.Artist]
+	a.Artist = tags[taglib.AlbumArtist]
 	a.Genre = tags[taglib.Genre]
 	a.Length = a.GetAlbumLength()
 }
