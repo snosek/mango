@@ -14,6 +14,6 @@ export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }
 
-export function GetTrackInfo(arg1) {
-  return window['go']['main']['App']['GetTrackInfo'](arg1);
+export function GetTrack(arg1) {
+  return window['go']['main']['App']['GetTrack'](arg1);
 }

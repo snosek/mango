@@ -8,4 +8,4 @@ export function GetAlbums(arg1:string):Promise<Array<string>>;
 
 export function GetDirPath():Promise<string>;
 
-export function GetTrackInfo(arg1:string):Promise<catalog.Track>;
+export function GetTrack(arg1:string):Promise<catalog.Track>;

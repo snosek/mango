@@ -7,7 +7,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-type TrackMetadata struct {
+type Track struct {
 	Filepath    string
 	Title       string
 	Artist      []string
@@ -17,42 +17,37 @@ type TrackMetadata struct {
 	SampleRate  uint
 }
 
-type Track struct {
-	Metadata *TrackMetadata
-}
-
 func NewTrack(fp string) Track {
 	t := Track{
-		Metadata: &TrackMetadata{
-			Filepath: fp,
-		},
+		Filepath: fp,
 	}
-	t.Metadata = t.FetchTrackMetadata()
+	t.FetchTrackMetadata()
 	return t
 }
 
-func (t Track) FetchTrackMetadata() *TrackMetadata {
-	meta := &TrackMetadata{Filepath: t.Metadata.Filepath}
-
+func (t *Track) FetchTrackMetadata() {
 	tags := t.FetchTrackTags()
-	if tags != nil {
-		meta.Title = tags["TITLE"][0]
-		meta.Artist = tags["ARTIST"]
-		meta.Genre = tags["GENRE"]
+	if tags == nil {
+		return
+	}
+	if tags["TITLE"] != nil {
+		t.Title = tags["TITLE"][0]
+	}
+	if tags["TRACKNUMBER"] != nil {
 		if trackNum, err := strconv.Atoi(tags["TRACKNUMBER"][0]); err == nil {
-			meta.TrackNumber = uint(trackNum)
+			t.TrackNumber = uint(trackNum)
 		}
 	}
+	t.Artist = tags["ARTIST"]
+	t.Genre = tags["GENRE"]
 
 	props := t.FetchTrackProperties()
-	meta.Length = props.Length
-	meta.SampleRate = props.SampleRate
-
-	return meta
+	t.Length = props.Length
+	t.SampleRate = props.SampleRate
 }
 
 func (t Track) FetchTrackTags() map[string][]string {
-	tags, err := taglib.ReadTags(t.Metadata.Filepath)
+	tags, err := taglib.ReadTags(t.Filepath)
 	if err != nil {
 		return nil
 	}
@@ -60,7 +55,7 @@ func (t Track) FetchTrackTags() map[string][]string {
 }
 
 func (t Track) FetchTrackProperties() taglib.Properties {
-	props, err := taglib.ReadProperties(t.Metadata.Filepath)
+	props, err := taglib.ReadProperties(t.Filepath)
 	if err != nil {
 		return taglib.Properties{}
 	}
