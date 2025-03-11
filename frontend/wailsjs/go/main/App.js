@@ -14,6 +14,10 @@ export function GetCatalog(arg1) {
   return window['go']['main']['App']['GetCatalog'](arg1);
 }
 
+export function GetCoverPath(arg1, arg2) {
+  return window['go']['main']['App']['GetCoverPath'](arg1, arg2);
+}
+
 export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }

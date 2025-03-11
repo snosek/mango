@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"mango/backend/utils"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -28,6 +29,10 @@ func NewAlbum(fp string) (Album, error) {
 	album.Tracks = SortTracks(tracks)
 	album.SetMetadata()
 	return album, nil
+}
+
+func (a *Album) GetCoverPath(fp string) string {
+	return filepath.Join(a.Filepath, fp)
 }
 
 func (a *Album) SetMetadata() {

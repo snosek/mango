@@ -1,12 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8"/>
-		<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-		<title>mango</title>
-	</head>
-	<body>
-		<div id="app"></div>
-		<script src="./src/main.js" type="module"></script>
-	</body>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>mango</title>
+	<link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="./css/albums.css">
+</head>
+
+<body>
+	<div class="app-container">
+		<header>
+			<h1>mango</h1>
+			<button id="select-dir-button" class="button">Add Music Directory</button>
+		</header>
+		<main>
+			<div id="albums-view" class="view">
+				<h2>Your Albums</h2>
+				<div id="albums-container" class="albums-grid"></div>
+			</div>
+			<div id="album-detail-view" class="view" style="display: none;">
+				<div class="detail-header">
+					<button id="back-button" class="button">Back to Albums</button>
+				</div>
+				<div id="album-info" class="album-info"></div>
+				<div id="tracks-container">
+					<h3>Tracks</h3>
+					<div id="tracks-list" class="tracks-list"></div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script type="module" src="./js/main.js"></script>
+</body>
+
 </html>

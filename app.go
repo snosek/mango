@@ -24,6 +24,10 @@ func (a *App) GetDirPath() (string, error) {
 	return utils.GetDirPath(a.ctx)
 }
 
+func (a *App) GetCoverPath(album catalog.Album, fp string) string {
+	return album.GetCoverPath(fp)
+}
+
 func (a *App) GetAlbums(fp string) ([]string, error) {
 	return utils.FetchDirectories(fp)
 }
