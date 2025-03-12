@@ -28,6 +28,7 @@ export namespace catalog {
 	    Genre: string[];
 	    Length: number;
 	    Tracks: Track[];
+	    CoverPath: string;
 	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -41,6 +42,7 @@ export namespace catalog {
 	        this.Genre = source["Genre"];
 	        this.Length = source["Length"];
 	        this.Tracks = this.convertValues(source["Tracks"], Track);
+	        this.CoverPath = source["CoverPath"];
 	        this.Filepath = source["Filepath"];
 	    }
 	

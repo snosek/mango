@@ -38,7 +38,7 @@ function createAlbumCard(album) {
 	element.dataset.id = album.Filepath;
 	element.innerHTML = `
         <div class="album-card__cover">
-			<p>beda okladki</p>
+			<img src="assets/covers/${album.Title}.jpg" alt="${album.Title}" />
         </div>
         <div class="album-card__info">
             <h3 class="album-card__title">${album.Title || 'Unknown Album'}</h3>
