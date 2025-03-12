@@ -35,7 +35,7 @@ export function renderAlbumDetails(album, infoContainer, tracksContainer) {
 function createAlbumCard(album) {
 	const element = document.createElement('div');
 	element.className = 'album-card';
-	element.dataset.id = album.Filepath;
+	element.dataset.id = album.Filepath;	
 	element.innerHTML = `
         <div class="album-card__cover">
 			<img src="assets/covers/${album.Title}.jpg" alt="${album.Title}" />

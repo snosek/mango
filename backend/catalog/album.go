@@ -63,6 +63,7 @@ func (a *Album) CopyCover() error {
 	if err != nil {
 		return err
 	}
+	defer coverFile.Close()
 	cover, err := io.ReadAll(coverFile)
 	if err != nil {
 		return err
