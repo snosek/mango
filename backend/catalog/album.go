@@ -1,8 +1,7 @@
 package catalog
 
 import (
-	"fmt"
-	"io"
+	"encoding/base64"
 	"mango/backend/utils"
 	"os"
 	"path/filepath"
@@ -13,13 +12,13 @@ import (
 )
 
 type Album struct {
-	Title     string
-	Artist    []string
-	Genre     []string
-	Length    time.Duration
-	Tracks    []*Track
-	CoverPath string
-	Filepath  string
+	Title    string
+	Artist   []string
+	Genre    []string
+	Length   time.Duration
+	Tracks   []*Track
+	Cover    string
+	Filepath string
 }
 
 func NewAlbum(fp string) (Album, error) {
@@ -32,7 +31,6 @@ func NewAlbum(fp string) (Album, error) {
 	}
 	album.Tracks = SortTracks(tracks)
 	album.SetMetadata()
-	album.CopyCover()
 	return album, nil
 }
 
@@ -51,28 +49,20 @@ func (a *Album) SetMetadata() {
 	}
 	a.Genre = tags[taglib.Genre]
 	a.Length = a.GetAlbumLength()
-	a.CoverPath = a.GetCoverPath("folder.jpg")
+	a.Cover = a.EncodeCover()
+}
+
+func (a *Album) EncodeCover() string {
+	cover, err := os.ReadFile(a.GetCoverPath("folder.jpg"))
+	if err != nil {
+		return ""
+	}
+	encodedCover := base64.StdEncoding.EncodeToString(cover)
+	return encodedCover
 }
 
 func (a *Album) GetCoverPath(fp string) string {
 	return filepath.Join(a.Filepath, fp)
-}
-
-func (a *Album) CopyCover() error {
-	coverFile, err := os.Open(a.CoverPath)
-	if err != nil {
-		return err
-	}
-	defer coverFile.Close()
-	cover, err := io.ReadAll(coverFile)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(fmt.Sprintf("frontend/assets/covers/%s.jpg", a.Title), cover, 0666)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (a Album) GetAlbumLength() time.Duration {
