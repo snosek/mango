@@ -1,6 +1,7 @@
 import { GetCatalog, GetAlbum, GetDirPath } from '../wailsjs/go/main/App';
 import { catalog } from '../wailsjs/go/models.ts';
 import { renderAlbumsList, renderAlbumDetails } from './album.js';
+import { playSong } from './player.js';
 
 let state = {
 	currentView: 'albums',
@@ -15,6 +16,7 @@ async function init() {
 	document.getElementById('back-button').addEventListener('click', navigateToAlbums);
 	document.getElementById('albums-container').addEventListener('click', handleAlbumClick);
 	document.getElementById('tracks-list').addEventListener('click', handleTrackClick);
+	document.getElementById('play-button').addEventListener('click', handlePlayClick);
 	await loadAlbums();
 }
 
@@ -47,6 +49,10 @@ async function handleAlbumClick(event) {
 		return;
 	const albumId = albumCard.dataset.id;
 	navigateToAlbumDetails(albumId);
+}
+
+function handlePlayClick() {
+	playSong(state.currentAlbum.Tracks[0].Filepath)
 }
 
 function handleTrackClick(event) {

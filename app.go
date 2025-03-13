@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"mango/backend/catalog"
+	"mango/backend/player"
 	"mango/backend/utils"
-	"os"
 )
 
 type App struct {
@@ -24,10 +23,6 @@ func (a *App) GetDirPath() (string, error) {
 	return utils.GetDirPath(a.ctx)
 }
 
-func (a *App) GetCoverPath(album catalog.Album, fp string) string {
-	return album.GetCoverPath(fp)
-}
-
 func (a *App) GetAlbums(fp string) ([]string, error) {
 	return utils.FetchDirectories(fp)
 }
@@ -38,9 +33,10 @@ func (a *App) GetTrack(fp string) catalog.Track {
 }
 
 func (a *App) GetAlbum(fp string) catalog.Album {
-	album, _ := catalog.NewAlbum(fp)
-	JSONAlbum, _ := json.Marshal(album)
-	os.WriteFile("test/test.json", JSONAlbum, 0666)
+	album, err := catalog.NewAlbum(fp)
+	if err != nil {
+		return catalog.Album{}
+	}
 	return album
 }
 
@@ -50,4 +46,9 @@ func (a *App) GetCatalog(fp string) catalog.Catalog {
 		return catalog.Catalog{}
 	}
 	return cat
+}
+
+func (a *App) PlaySong(fp string) {
+	p := player.Player{}
+	p.Play(fp)
 }

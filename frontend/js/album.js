@@ -1,5 +1,4 @@
 import { formatDuration } from './utils.js';
-import { GetCoverPath } from '../wailsjs/go/main/App';
 
 export function renderAlbumsList(albums, container) {
 	container.innerHTML = '';

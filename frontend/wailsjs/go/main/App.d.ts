@@ -8,8 +8,8 @@ export function GetAlbums(arg1:string):Promise<Array<string>>;
 
 export function GetCatalog(arg1:string):Promise<catalog.Catalog>;
 
-export function GetCoverPath(arg1:catalog.Album,arg2:string):Promise<string>;
-
 export function GetDirPath():Promise<string>;
 
 export function GetTrack(arg1:string):Promise<catalog.Track>;
+
+export function PlaySong(arg1:string):Promise<void>;

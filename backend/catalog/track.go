@@ -33,7 +33,8 @@ func (t *Track) SetMetadata() {
 		t.Title = tags[taglib.Title][0]
 	}
 	if tags[taglib.TrackNumber] != nil {
-		if trackNum, err := strconv.Atoi(tags[taglib.TrackNumber][0]); err == nil {
+		trackNum, err := strconv.Atoi(tags[taglib.TrackNumber][0])
+		if err == nil {
 			t.TrackNumber = uint(trackNum)
 		}
 	}
