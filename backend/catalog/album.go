@@ -31,6 +31,9 @@ func NewAlbum(fp string) (Album, error) {
 	}
 	album.Tracks = SortTracks(tracks)
 	album.SetMetadata()
+	for _, t := range album.Tracks {
+		t.Cover = &album.Cover
+	}
 	return album, nil
 }
 

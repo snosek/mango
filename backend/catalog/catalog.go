@@ -6,7 +6,6 @@ import (
 
 type Catalog struct {
 	Albums   []*Album
-	Tracks   []*Track
 	Filepath string
 }
 
@@ -24,7 +23,6 @@ func NewCatalog(fp string) (Catalog, error) {
 			return catalog, err
 		}
 		catalog.Albums = append(catalog.Albums, &album)
-		catalog.Tracks = append(catalog.Tracks, album.Tracks...)
 	}
 	return catalog, nil
 }

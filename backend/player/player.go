@@ -1,34 +1,51 @@
 package player
 
 import (
-	"log"
-	"os"
-	"time"
+	"fmt"
+	"mango/backend/catalog"
 
-	"github.com/gopxl/beep"
-	"github.com/gopxl/beep/flac"
-	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/effects"
+	"github.com/gopxl/beep/v2/speaker"
 )
 
 type Player struct {
-	isPlaying bool
+	sampleRate beep.SampleRate
+	streamer   beep.StreamSeeker
+	ctrl       *beep.Ctrl
+	resampler  *beep.Resampler
+	volume     *effects.Volume
 }
 
-func (p Player) Play(fp string) {
-	f, err := os.Open(fp)
+func NewPlayer(streamer beep.StreamSeeker, sampleRate beep.SampleRate) (*Player, error) {
+	loopStreamer, err := beep.Loop2(streamer)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	streamer, format, err := flac.Decode(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// streamer.Close() also closes the file
-	defer streamer.Close()
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	ctrl := &beep.Ctrl{Streamer: loopStreamer, Paused: false}
+	resampler := beep.ResampleRatio(6, 1, ctrl)
+	volume := &effects.Volume{Streamer: resampler, Base: 2}
+	return &Player{
+		sampleRate: sampleRate,
+		streamer:   streamer,
+		ctrl:       ctrl,
+		resampler:  resampler,
+		volume:     volume,
+	}, nil
+}
+
+func (p Player) PlayTrack(t catalog.Track) {
+	fmt.Print("playing...")
 	done := make(chan bool)
-	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+	p.resampler.SetRatio(float64(t.SampleRate) / float64(41000))
+	speaker.Play(beep.Seq(p.volume, beep.Callback(func() {
 		done <- true
 	})))
 	<-done
+}
+
+func (p Player) Pause() {
+	speaker.Lock()
+	p.ctrl.Paused = !p.ctrl.Paused
+	speaker.Unlock()
 }

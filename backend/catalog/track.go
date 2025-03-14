@@ -13,6 +13,7 @@ type Track struct {
 	TrackNumber uint
 	Length      time.Duration
 	SampleRate  uint
+	Cover       *string
 	Filepath    string
 }
 

@@ -6,6 +6,7 @@ export namespace catalog {
 	    TrackNumber: number;
 	    Length: number;
 	    SampleRate: number;
+	    Cover?: string;
 	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -19,6 +20,7 @@ export namespace catalog {
 	        this.TrackNumber = source["TrackNumber"];
 	        this.Length = source["Length"];
 	        this.SampleRate = source["SampleRate"];
+	        this.Cover = source["Cover"];
 	        this.Filepath = source["Filepath"];
 	    }
 	}
@@ -66,7 +68,6 @@ export namespace catalog {
 	}
 	export class Catalog {
 	    Albums: Album[];
-	    Tracks: Track[];
 	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -76,7 +77,6 @@ export namespace catalog {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Albums = this.convertValues(source["Albums"], Album);
-	        this.Tracks = this.convertValues(source["Tracks"], Track);
 	        this.Filepath = source["Filepath"];
 	    }
 	
@@ -97,6 +97,23 @@ export namespace catalog {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace player {
+	
+	export class Player {
+	
+	
+	    static createFrom(source: any = {}) {
+	        return new Player(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	
+	    }
 	}
 
 }

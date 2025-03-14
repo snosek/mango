@@ -22,6 +22,10 @@ export function GetTrack(arg1) {
   return window['go']['main']['App']['GetTrack'](arg1);
 }
 
+export function PauseSong(arg1) {
+  return window['go']['main']['App']['PauseSong'](arg1);
+}
+
 export function PlaySong(arg1) {
   return window['go']['main']['App']['PlaySong'](arg1);
 }
