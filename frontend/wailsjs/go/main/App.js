@@ -22,10 +22,18 @@ export function GetTrack(arg1) {
   return window['go']['main']['App']['GetTrack'](arg1);
 }
 
+export function NewPlaylist(arg1) {
+  return window['go']['main']['App']['NewPlaylist'](arg1);
+}
+
 export function PauseSong(arg1) {
   return window['go']['main']['App']['PauseSong'](arg1);
 }
 
-export function PlaySong(arg1) {
-  return window['go']['main']['App']['PlaySong'](arg1);
+export function Play(arg1) {
+  return window['go']['main']['App']['Play'](arg1);
+}
+
+export function ResumeSong(arg1) {
+  return window['go']['main']['App']['ResumeSong'](arg1);
 }

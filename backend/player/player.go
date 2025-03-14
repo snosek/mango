@@ -1,51 +1,62 @@
 package player
 
 import (
-	"fmt"
-	"mango/backend/catalog"
+	"time"
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/effects"
 	"github.com/gopxl/beep/v2/speaker"
 )
 
+const sampleRate = 44100
+const bufferSize = time.Second / 10
+
+func InitSpeaker() {
+	sr := beep.SampleRate(sampleRate)
+	speaker.Init(sr, sr.N(bufferSize))
+}
+
 type Player struct {
-	sampleRate beep.SampleRate
-	streamer   beep.StreamSeeker
-	ctrl       *beep.Ctrl
-	resampler  *beep.Resampler
-	volume     *effects.Volume
+	streamer beep.Streamer
+	ctrl     *beep.Ctrl
+	volume   *effects.Volume
 }
 
-func NewPlayer(streamer beep.StreamSeeker, sampleRate beep.SampleRate) (*Player, error) {
-	loopStreamer, err := beep.Loop2(streamer)
-	if err != nil {
-		return nil, err
-	}
-	ctrl := &beep.Ctrl{Streamer: loopStreamer, Paused: false}
-	resampler := beep.ResampleRatio(6, 1, ctrl)
-	volume := &effects.Volume{Streamer: resampler, Base: 2}
+func NewPlayer(streamer beep.Streamer) *Player {
+	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
+	volume := &effects.Volume{Streamer: ctrl, Base: 2, Volume: 1}
 	return &Player{
-		sampleRate: sampleRate,
-		streamer:   streamer,
-		ctrl:       ctrl,
-		resampler:  resampler,
-		volume:     volume,
-	}, nil
+		streamer: streamer,
+		ctrl:     ctrl,
+		volume:   volume,
+	}
 }
 
-func (p Player) PlayTrack(t catalog.Track) {
-	fmt.Print("playing...")
-	done := make(chan bool)
-	p.resampler.SetRatio(float64(t.SampleRate) / float64(41000))
-	speaker.Play(beep.Seq(p.volume, beep.Callback(func() {
-		done <- true
-	})))
-	<-done
+func (p *Player) Play() {
+	speaker.Play(p.streamer)
 }
 
-func (p Player) Pause() {
+func (p *Player) Pause() {
 	speaker.Lock()
-	p.ctrl.Paused = !p.ctrl.Paused
+	p.ctrl.Paused = true
 	speaker.Unlock()
+}
+
+func (p *Player) Resume() {
+	speaker.Lock()
+	p.ctrl.Paused = false
+	speaker.Unlock()
+}
+
+func (p *Player) SetVolume(vol float64) {
+	speaker.Lock()
+	p.volume.Volume = vol
+	speaker.Unlock()
+}
+
+func resampleStreamer(streamer beep.Streamer, from, to beep.SampleRate) beep.Streamer {
+	if from != to {
+		return beep.Resample(6, from, to, streamer)
+	}
+	return streamer
 }

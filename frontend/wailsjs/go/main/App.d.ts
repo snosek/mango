@@ -13,6 +13,10 @@ export function GetDirPath():Promise<string>;
 
 export function GetTrack(arg1:string):Promise<catalog.Track>;
 
-export function PauseSong(arg1:player.Player):Promise<void>;
+export function NewPlaylist(arg1:Array<catalog.Track>):Promise<player.Playlist>;
 
-export function PlaySong(arg1:catalog.Track):Promise<void>;
+export function PauseSong(arg1:player.Playlist):Promise<void>;
+
+export function Play(arg1:player.Playlist):Promise<void>;
+
+export function ResumeSong(arg1:player.Playlist):Promise<void>;
