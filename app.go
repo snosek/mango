@@ -56,33 +56,25 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 }
 
 func (a *App) Play(playlistID string) {
-	pl, exists := player.GetPlaylist(playlistID)
-	if !exists {
-		return
-	}
-	err := pl.PlayCurrent()
-	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
-	if err != nil {
-		return
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		pl.PlayCurrent()
+		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
 }
 
 func (a *App) PauseSong(playlistID string) {
-	pl, exists := player.GetPlaylist(playlistID)
-	if !exists {
-		return
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		pl.Player.Pause()
+		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
-	pl.Player.Pause()
-	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
+
 }
 
 func (a *App) ResumeSong(playlistID string) {
-	pl, exists := player.GetPlaylist(playlistID)
-	if !exists {
-		return
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		pl.Player.Resume()
+		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
-	pl.Player.Resume()
-	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 }
 
 func (a *App) GetPlaylist(playlistID string) *player.Playlist {

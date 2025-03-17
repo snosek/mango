@@ -10,9 +10,7 @@ type Catalog struct {
 }
 
 func NewCatalog(fp string) (Catalog, error) {
-	catalog := Catalog{
-		Filepath: fp,
-	}
+	catalog := Catalog{Filepath: fp}
 	directories, err := utils.FetchDirectories(fp)
 	if err != nil {
 		return catalog, err
@@ -20,7 +18,7 @@ func NewCatalog(fp string) (Catalog, error) {
 	for _, dir := range directories {
 		album, err := NewAlbum(dir)
 		if err != nil {
-			return catalog, err
+			continue
 		}
 		catalog.Albums = append(catalog.Albums, &album)
 	}

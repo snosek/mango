@@ -25,8 +25,7 @@ export function renderAlbumDetails(album, infoContainer, tracksContainer) {
 	tracksContainer.innerHTML = '';
 	const fragment = document.createDocumentFragment();
 	album.Tracks.forEach((track, index) => {
-		const trackElement = createTrackItem(track, index);
-		fragment.appendChild(trackElement);
+		fragment.appendChild(createTrackItem(track, index));
 	});
 	tracksContainer.appendChild(fragment);
 }

@@ -22,9 +22,7 @@ type Album struct {
 }
 
 func NewAlbum(fp string) (Album, error) {
-	album := Album{
-		Filepath: fp,
-	}
+	album := Album{Filepath: fp}
 	tracks, err := album.FetchTracks()
 	if err != nil {
 		return album, err
@@ -38,6 +36,9 @@ func NewAlbum(fp string) (Album, error) {
 }
 
 func (a *Album) SetMetadata() {
+	if len(a.Tracks) == 0 {
+		return
+	}
 	tags, err := taglib.ReadTags(a.Tracks[0].Filepath)
 	if err != nil {
 		return
@@ -56,24 +57,19 @@ func (a *Album) SetMetadata() {
 }
 
 func (a *Album) EncodeCover() string {
-	cover, err := os.ReadFile(a.GetCoverPath("folder.jpg"))
+	cover, err := os.ReadFile(filepath.Join(a.Filepath, "folder.jpg"))
 	if err != nil {
 		return ""
 	}
-	encodedCover := base64.StdEncoding.EncodeToString(cover)
-	return encodedCover
-}
-
-func (a *Album) GetCoverPath(fp string) string {
-	return filepath.Join(a.Filepath, fp)
+	return base64.StdEncoding.EncodeToString(cover)
 }
 
 func (a Album) GetAlbumLength() time.Duration {
-	var albumLength time.Duration
+	var totalLength time.Duration
 	for _, t := range a.Tracks {
-		albumLength += t.Length
+		totalLength += t.Length
 	}
-	return albumLength
+	return totalLength
 }
 
 func (a Album) FetchTracks() ([]*Track, error) {
@@ -89,9 +85,9 @@ func (a Album) FetchTracks() ([]*Track, error) {
 	return tracks, nil
 }
 
-func SortTracks(tracksToSort []*Track) []*Track {
-	sort.SliceStable(tracksToSort, func(i, j int) bool {
-		return tracksToSort[i].TrackNumber < tracksToSort[j].TrackNumber
+func SortTracks(tracks []*Track) []*Track {
+	sort.SliceStable(tracks, func(i, j int) bool {
+		return tracks[i].TrackNumber < tracks[j].TrackNumber
 	})
-	return tracksToSort
+	return tracks
 }

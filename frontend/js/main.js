@@ -6,10 +6,7 @@ import { EventsOn } from '../wailsjs/runtime';
 let state = {
 	currentView: 'albums',
 	currentAlbum: null,
-	currentTrack: null,
 	currentPlaylistID: null,
-	isPlaying: false,
-	catalog: catalog.Catalog
 };
 
 async function init() {
@@ -20,6 +17,13 @@ async function init() {
 	document.getElementById('play-button').addEventListener('click', handlePlayClick);
 	document.getElementById('pause-button').addEventListener('click', handlePauseClick);
 	document.getElementById('resume-button').addEventListener('click', handleResumeClick);
+
+	EventsOn("playerUpdated", async (playlistID) => {
+		if (state.currentPlaylistId === playlistID) {
+			let currentPlaylist = await GetPlaylist(playlistID);
+			state.currentPlaylistID = currentPlaylist.ID
+		}
+	});
 
 	await loadAlbums();
 }
@@ -49,10 +53,8 @@ async function handleSelectDirectory() {
 
 async function handleAlbumClick(event) {
 	const albumCard = event.target.closest('.album-card');
-	if (!albumCard) 
-		return;
-	const albumId = albumCard.dataset.id;
-	navigateToAlbumDetails(albumId);
+	if (albumCard) 
+		navigateToAlbumDetails(albumCard.dataset.id);
 }
 
 async function handlePlayClick() {
@@ -61,21 +63,11 @@ async function handlePlayClick() {
 	await Play(state.currentPlaylistId);
 }
 
-EventsOn("playerUpdated", async (playlistID) => {
-	if (state.currentPlaylistId === playlistID) {
-		let currentPlaylist = await GetPlaylist(playlistID);
-		state.currentPlaylistID = currentPlaylist.ID
-		console.log("Updated playlist received:", currentPlaylist);
-	}
-});
-
 function handlePauseClick() {
-	console.log(state.currentPlaylistID);
 	PauseSong(state.currentPlaylistID)
 }
 
 function handleResumeClick() {
-	console.log(state.currentPlaylistID);
 	ResumeSong(state.currentPlaylistID)
 }
 
