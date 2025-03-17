@@ -116,6 +116,7 @@ export namespace player {
 	    }
 	}
 	export class Playlist {
+	    ID: string;
 	    Tracks: catalog.Track[];
 	    Current: number;
 	    // Go type: Player
@@ -127,6 +128,7 @@ export namespace player {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
 	        this.Tracks = this.convertValues(source["Tracks"], catalog.Track);
 	        this.Current = source["Current"];
 	        this.Player = this.convertValues(source["Player"], null);

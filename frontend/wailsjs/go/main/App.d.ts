@@ -11,12 +11,14 @@ export function GetCatalog(arg1:string):Promise<catalog.Catalog>;
 
 export function GetDirPath():Promise<string>;
 
+export function GetPlaylist(arg1:string):Promise<player.Playlist>;
+
 export function GetTrack(arg1:string):Promise<catalog.Track>;
 
 export function NewPlaylist(arg1:Array<catalog.Track>):Promise<player.Playlist>;
 
-export function PauseSong(arg1:player.Playlist):Promise<void>;
+export function PauseSong(arg1:string):Promise<void>;
 
-export function Play(arg1:player.Playlist):Promise<void>;
+export function Play(arg1:string):Promise<void>;
 
-export function ResumeSong(arg1:player.Playlist):Promise<void>;
+export function ResumeSong(arg1:string):Promise<void>;

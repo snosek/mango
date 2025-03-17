@@ -5,6 +5,8 @@ import (
 	"mango/backend/catalog"
 	"mango/backend/player"
 	"mango/backend/utils"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
@@ -53,16 +55,40 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 	return player.NewPlaylist(tracks)
 }
 
-func (a *App) Play(playlist *player.Playlist) {
-	if err := playlist.PlayCurrent(); err != nil {
+func (a *App) Play(playlistID string) {
+	pl, exists := player.GetPlaylist(playlistID)
+	if !exists {
+		return
+	}
+	err := pl.PlayCurrent()
+	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
+	if err != nil {
 		return
 	}
 }
 
-func (a *App) PauseSong(playlist player.Playlist) {
-	playlist.Player.Pause()
+func (a *App) PauseSong(playlistID string) {
+	pl, exists := player.GetPlaylist(playlistID)
+	if !exists {
+		return
+	}
+	pl.Player.Pause()
+	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 }
 
-func (a *App) ResumeSong(playlist player.Playlist) {
-	playlist.Player.Resume()
+func (a *App) ResumeSong(playlistID string) {
+	pl, exists := player.GetPlaylist(playlistID)
+	if !exists {
+		return
+	}
+	pl.Player.Resume()
+	runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
+}
+
+func (a *App) GetPlaylist(playlistID string) *player.Playlist {
+	pl, exists := player.GetPlaylist(playlistID)
+	if !exists {
+		return nil
+	}
+	return pl
 }

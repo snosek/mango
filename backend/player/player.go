@@ -33,7 +33,7 @@ func NewPlayer(streamer beep.Streamer) *Player {
 }
 
 func (p *Player) Play() {
-	speaker.Play(p.streamer)
+	speaker.Play(p.volume)
 }
 
 func (p *Player) Pause() {

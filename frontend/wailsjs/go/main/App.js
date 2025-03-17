@@ -18,6 +18,10 @@ export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }
 
+export function GetPlaylist(arg1) {
+  return window['go']['main']['App']['GetPlaylist'](arg1);
+}
+
 export function GetTrack(arg1) {
   return window['go']['main']['App']['GetTrack'](arg1);
 }

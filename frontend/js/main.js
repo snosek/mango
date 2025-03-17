@@ -1,12 +1,13 @@
-import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong } from '../wailsjs/go/main/App';
+import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong, GetPlaylist } from '../wailsjs/go/main/App';
 import { catalog } from '../wailsjs/go/models.ts';
 import { renderAlbumsList, renderAlbumDetails } from './album.js';
+import { EventsOn } from '../wailsjs/runtime';
 
 let state = {
 	currentView: 'albums',
 	currentAlbum: null,
 	currentTrack: null,
-	currentPlaylist: null,
+	currentPlaylistID: null,
 	isPlaying: false,
 	catalog: catalog.Catalog
 };
@@ -55,21 +56,27 @@ async function handleAlbumClick(event) {
 }
 
 async function handlePlayClick() {
-	let playlist = await NewPlaylist(state.currentAlbum.Tracks)
-	state.currentPlaylist = playlist;
-	console.log("start playing");
-	await Play(state.currentPlaylist);
-	console.log("finish playing"); 
+	let playlist = await NewPlaylist(state.currentAlbum.Tracks);
+	state.currentPlaylistId = playlist.ID; 
+	await Play(state.currentPlaylistId);
 }
 
+EventsOn("playerUpdated", async (playlistID) => {
+	if (state.currentPlaylistId === playlistID) {
+		let currentPlaylist = await GetPlaylist(playlistID);
+		state.currentPlaylistID = currentPlaylist.ID
+		console.log("Updated playlist received:", currentPlaylist);
+	}
+});
+
 function handlePauseClick() {
-	console.log(state.currentPlaylist);
-	PauseSong(state.currentPlaylist)
+	console.log(state.currentPlaylistID);
+	PauseSong(state.currentPlaylistID)
 }
 
 function handleResumeClick() {
-	console.log(state.currentPlaylist);
-	ResumeSong(state.currentPlaylist)
+	console.log(state.currentPlaylistID);
+	ResumeSong(state.currentPlaylistID)
 }
 
 function handleTrackClick(event) {

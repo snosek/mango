@@ -4,23 +4,41 @@ import (
 	"fmt"
 	"mango/backend/catalog"
 	"os"
+	"sync"
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/flac"
 )
 
 type Playlist struct {
+	ID      string
 	Tracks  []*catalog.Track
 	Current int
 	Player  *Player
 }
 
+var (
+	playlists = make(map[string]*Playlist)
+	mu        sync.Mutex
+)
+
 func NewPlaylist(tracks []*catalog.Track) *Playlist {
-	return &Playlist{Tracks: tracks, Current: 0}
+	id := fmt.Sprintf("%d", len(playlists)+1) // Simple unique ID
+	pl := &Playlist{ID: id, Tracks: tracks}
+	mu.Lock()
+	playlists[id] = pl
+	mu.Unlock()
+	return pl
+}
+
+func GetPlaylist(id string) (*Playlist, bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	pl, exists := playlists[id]
+	return pl, exists
 }
 
 func (pl *Playlist) PlayCurrent() error {
-	fmt.Println("------------------------------------------------------------------- entered playCurrent ")
 	if pl.Player != nil {
 		pl.Player.Pause()
 	}
@@ -28,13 +46,9 @@ func (pl *Playlist) PlayCurrent() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("------------------------------------------------------------------- decoded flac ")
 	resampled := resampleStreamer(streamer, format.SampleRate, beep.SampleRate(sampleRate))
 	done := make(chan bool)
 	pl.Player = NewPlayer(beep.Seq(resampled, beep.Callback(func() {
-		done <- true
-	})))
-	pl.Player = NewPlayer(beep.Seq(streamer, beep.Callback(func() {
 		done <- true
 	})))
 	pl.Player.Play()
