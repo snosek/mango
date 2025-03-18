@@ -1,5 +1,4 @@
 import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong, GetPlaylist } from '../wailsjs/go/main/App';
-import { catalog } from '../wailsjs/go/models.ts';
 import { renderAlbumsList, renderAlbumDetails } from './album.js';
 import { EventsOn } from '../wailsjs/runtime';
 
@@ -17,13 +16,6 @@ async function init() {
 	document.getElementById('play-button').addEventListener('click', handlePlayClick);
 	document.getElementById('pause-button').addEventListener('click', handlePauseClick);
 	document.getElementById('resume-button').addEventListener('click', handleResumeClick);
-
-	EventsOn("playerUpdated", async (playlistID) => {
-		if (state.currentPlaylistId === playlistID) {
-			let currentPlaylist = await GetPlaylist(playlistID);
-			state.currentPlaylistID = currentPlaylist.ID
-		}
-	});
 
 	await loadAlbums();
 }
@@ -59,11 +51,12 @@ async function handleAlbumClick(event) {
 
 async function handlePlayClick() {
 	let playlist = await NewPlaylist(state.currentAlbum.Tracks);
-	state.currentPlaylistId = playlist.ID; 
-	await Play(state.currentPlaylistId);
+	state.currentPlaylistID = playlist.ID; 
+	await Play(state.currentPlaylistID);
 }
 
 function handlePauseClick() {
+	console.log(state.currentPlaylistID)
 	PauseSong(state.currentPlaylistID)
 }
 
@@ -97,6 +90,7 @@ async function navigateToAlbumDetails(albumId) {
 }
 
 export function showView(viewId) {
+	window.scrollTo(0, 0);
 	document.querySelectorAll('.view').forEach(view => {
 		view.style.display = 'none';
 	});

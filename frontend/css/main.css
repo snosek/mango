@@ -50,12 +50,10 @@ main {
 	color: white;
 	padding: 0.5rem;
 	text-align: center;
-	margin-top: auto;
-	margin-bottom: auto;
 }
 
 .view {
-	animation: fadeIn 0.3s ease-in-out;
+	animation: fadeIn 0.2s ease-in-out;
 }
 
 .button {

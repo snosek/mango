@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"mango/backend/catalog"
 	"mango/backend/player"
 	"mango/backend/utils"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
@@ -58,22 +57,21 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 func (a *App) Play(playlistID string) {
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.PlayCurrent()
-		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
 }
 
 func (a *App) PauseSong(playlistID string) {
+	fmt.Println(playlistID)
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.Player.Pause()
-		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
 
 }
 
 func (a *App) ResumeSong(playlistID string) {
+	fmt.Println(playlistID)
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.Player.Resume()
-		runtime.EventsEmit(a.ctx, "playerUpdated", pl.ID)
 	}
 }
 

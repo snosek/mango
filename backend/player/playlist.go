@@ -23,7 +23,7 @@ var (
 )
 
 func NewPlaylist(tracks []*catalog.Track) *Playlist {
-	id := fmt.Sprintf("%d", len(playlists)+1) // Simple unique ID
+	id := fmt.Sprintf("%d", len(playlists)+1)
 	pl := &Playlist{ID: id, Tracks: tracks}
 	mu.Lock()
 	playlists[id] = pl
