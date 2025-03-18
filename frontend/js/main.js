@@ -1,6 +1,5 @@
-import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong, GetPlaylist } from '../wailsjs/go/main/App';
+import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails } from './album.js';
-import { EventsOn } from '../wailsjs/runtime';
 
 let state = {
 	currentView: 'albums',
