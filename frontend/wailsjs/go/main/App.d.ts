@@ -17,8 +17,12 @@ export function GetTrack(arg1:string):Promise<catalog.Track>;
 
 export function NewPlaylist(arg1:Array<catalog.Track>):Promise<player.Playlist>;
 
+export function NextTrack(arg1:string):Promise<void>;
+
 export function PauseSong(arg1:string):Promise<void>;
 
 export function Play(arg1:string):Promise<void>;
+
+export function PreviousTrack(arg1:string):Promise<void>;
 
 export function ResumeSong(arg1:string):Promise<void>;

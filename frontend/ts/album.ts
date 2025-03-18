@@ -15,22 +15,6 @@ export function renderAlbumsList(albums: catalog.Album[] | undefined, container:
 	container.appendChild(fragment);
 }
 
-export function renderAlbumDetails(album: catalog.Album, infoContainer: HTMLElement, tracksContainer: HTMLElement): void {
-	infoContainer.innerHTML = `
-    <h2 class="album-info__title">${album.Title || 'Unknown Album'}</h2>
-    <p class="album-info__artist">${album.Artist.join(', ') || 'Unknown Artist'}</p>
-    <div class="album-info__details">
-      <div>Tracks: ${album.Tracks.length}</div>
-    </div>
-  `;
-	tracksContainer.innerHTML = '';
-	const fragment = document.createDocumentFragment();
-	album.Tracks.forEach((track, index) => {
-		fragment.appendChild(createTrackItem(track, index));
-	});
-	tracksContainer.appendChild(fragment);
-}
-
 function createAlbumCard(album: catalog.Album): HTMLElement {
 	const element = document.createElement('div');
 	element.className = 'album-card';
@@ -45,6 +29,22 @@ function createAlbumCard(album: catalog.Album): HTMLElement {
     </div>
   `;
 	return element;
+}
+
+export function renderAlbumDetails(album: catalog.Album, infoContainer: HTMLElement, tracksContainer: HTMLElement): void {
+	infoContainer.innerHTML = `
+    <h2 class="album-info__title">${album.Title || 'Unknown Album'}</h2>
+    <p class="album-info__artist">${album.Artist.join(', ') || 'Unknown Artist'}</p>
+    <div class="album-info__details">
+      <div>Tracks: ${album.Tracks.length}</div>
+    </div>
+  `;
+	tracksContainer.innerHTML = '';
+	const fragment = document.createDocumentFragment();
+	album.Tracks.forEach((track, index) => {
+		fragment.appendChild(createTrackItem(track, index));
+	});
+	tracksContainer.appendChild(fragment);
 }
 
 function createTrackItem(track: catalog.Track, index: number): HTMLElement {

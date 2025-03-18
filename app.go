@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"mango/backend/catalog"
 	"mango/backend/player"
 	"mango/backend/utils"
@@ -61,7 +60,6 @@ func (a *App) Play(playlistID string) {
 }
 
 func (a *App) PauseSong(playlistID string) {
-	fmt.Println(playlistID)
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.Player.Pause()
 	}
@@ -69,9 +67,20 @@ func (a *App) PauseSong(playlistID string) {
 }
 
 func (a *App) ResumeSong(playlistID string) {
-	fmt.Println(playlistID)
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.Player.Resume()
+	}
+}
+
+func (a *App) PreviousTrack(playlistID string) {
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		pl.PreviousTrack()
+	}
+}
+
+func (a *App) NextTrack(playlistID string) {
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		pl.NextTrack()
 	}
 }
 

@@ -1,6 +1,16 @@
-import { GetCatalog, GetAlbum, GetDirPath, NewPlaylist, Play, PauseSong, ResumeSong } from '../wailsjs/go/main/App';
-import { catalog } from '../wailsjs/go/models';
+import { 
+	GetCatalog, 
+	GetAlbum, 
+	GetDirPath, 
+	NewPlaylist, 
+	Play, 
+	PauseSong, 
+	ResumeSong, 
+	PreviousTrack, 
+	NextTrack 
+} from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails } from './album';
+import { catalog } from '../wailsjs/go/models';
 
 interface AppState {
 	currentView: 'albums' | 'album-detail';
@@ -24,6 +34,8 @@ async function init(): Promise<void> {
 	document.getElementById('play-button')?.addEventListener('click', handlePlayClick);
 	document.getElementById('pause-button')?.addEventListener('click', handlePauseClick);
 	document.getElementById('resume-button')?.addEventListener('click', handleResumeClick);
+	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
+	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
 
 	loadAlbums("");
 }
@@ -78,6 +90,16 @@ function handlePauseClick(): void {
 function handleResumeClick(): void {
 	if (!state.currentPlaylistID) return;
 	ResumeSong(state.currentPlaylistID);
+}
+
+function handlePreviousTrackClick(): void {
+	if (!state.currentPlaylistID) return;
+	PreviousTrack(state.currentPlaylistID);
+}
+
+function handleNextTrackClick(): void {
+	if (!state.currentPlaylistID) return;
+	NextTrack(state.currentPlaylistID);
 }
 
 function handleTrackClick(event: MouseEvent): void {
