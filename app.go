@@ -78,9 +78,8 @@ func (a *App) ResumeSong(playlistID string) {
 }
 
 func (a *App) GetPlaylist(playlistID string) *player.Playlist {
-	pl, exists := player.GetPlaylist(playlistID)
-	if !exists {
-		return nil
+	if pl, exists := player.GetPlaylist(playlistID); exists {
+		return pl
 	}
-	return pl
+	return nil
 }
