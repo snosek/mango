@@ -84,7 +84,6 @@ function handleTrackClick(event: MouseEvent): void {
 	const target = event.target as HTMLElement;
 	const trackItem = target.closest('.track-item');
 	if (!trackItem) return;
-	// Track click functionality can be added here
 }
 
 function navigateToAlbums(): void {

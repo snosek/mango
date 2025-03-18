@@ -6,7 +6,7 @@ export namespace catalog {
 	    TrackNumber: number;
 	    Length: number;
 	    SampleRate: number;
-	    Cover?: string;
+	    AlbumID: string;
 	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -20,7 +20,7 @@ export namespace catalog {
 	        this.TrackNumber = source["TrackNumber"];
 	        this.Length = source["Length"];
 	        this.SampleRate = source["SampleRate"];
-	        this.Cover = source["Cover"];
+	        this.AlbumID = source["AlbumID"];
 	        this.Filepath = source["Filepath"];
 	    }
 	}

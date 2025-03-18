@@ -39,8 +39,10 @@ func GetPlaylist(id string) (*Playlist, bool) {
 }
 
 func (pl *Playlist) PlayCurrent() error {
-	if pl.Player != nil {
-		pl.Player.Pause()
+	for _, p := range playlists {
+		if p.Player != nil {
+			p.Player.Pause()
+		}
 	}
 	streamer, format, err := decodeFLAC(pl.Tracks[pl.Current].Filepath)
 	if err != nil {

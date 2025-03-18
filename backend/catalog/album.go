@@ -30,7 +30,7 @@ func NewAlbum(fp string) (Album, error) {
 	album.Tracks = SortTracks(tracks)
 	album.SetMetadata()
 	for _, t := range album.Tracks {
-		t.Cover = &album.Cover
+		t.AlbumID = album.Filepath
 	}
 	return album, nil
 }
