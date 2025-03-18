@@ -14,9 +14,9 @@
 }
 
 .album-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
+	/* transform: translateY(-5px); disabled cause of a bug */
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+} 
 
 .album-card__cover {
 	width: 100%;

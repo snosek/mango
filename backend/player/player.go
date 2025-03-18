@@ -24,7 +24,7 @@ type Player struct {
 
 func NewPlayer(streamer beep.Streamer) *Player {
 	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
-	volume := &effects.Volume{Streamer: ctrl, Base: 2, Volume: 1}
+	volume := &effects.Volume{Streamer: ctrl, Base: 2, Volume: 0}
 	return &Player{
 		streamer: streamer,
 		ctrl:     ctrl,
@@ -56,7 +56,7 @@ func (p *Player) SetVolume(vol float64) {
 
 func resampleStreamer(streamer beep.Streamer, from, to beep.SampleRate) beep.Streamer {
 	if from != to {
-		return beep.Resample(6, from, to, streamer)
+		return beep.Resample(10, from, to, streamer)
 	}
 	return streamer
 }
