@@ -7,6 +7,16 @@
 html {
 	overscroll-behavior-y: none;
 	overscroll-behavior-x: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+h1, h2, h3, p, .album-info__details {
+	cursor: default;
 }
 
 body {
