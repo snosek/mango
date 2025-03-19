@@ -77,6 +77,10 @@ async function handlePlayClick(): Promise<void> {
 		return;
 	let playlist = await NewPlaylist(state.currentAlbum.Tracks);
 	state.currentPlaylistID = playlist.ID;
+	let nextBtn = document.getElementById('next_track-button') as HTMLButtonElement
+	let prevBtn = document.getElementById('previous_track-button') as HTMLButtonElement
+	nextBtn.className = "playback-ctrl"
+	prevBtn.className = "playback-ctrl"
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
 	await Play(state.currentPlaylistID);
@@ -115,10 +119,10 @@ function changePauseResumeButtonState(to: "pause" | "resume"): void {
 	let btn = document.getElementById('pause_resume-button') as HTMLButtonElement
 	if (to == "pause") {
 		btn.innerHTML = `<i class="material-icons">pause_circle</i>`
-		btn.className = "playback-ctrl pause"
+		btn.className = "playback-ctrl"
 	} else if (to == "resume") {
 		btn.innerHTML = `<i class="material-icons">play_circle</i>`
-		btn.className = "playback-ctrl resume"
+		btn.className = "playback-ctrl"
 	}
 }	
 

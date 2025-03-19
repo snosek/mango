@@ -128,6 +128,11 @@
 	border: none;
 }
 
+.not-allowed {
+	cursor: not-allowed;
+	color: #999;
+}
+
 .playback-ctrl:hover {
 	color: #999;
 }
