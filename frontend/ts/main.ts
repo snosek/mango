@@ -17,13 +17,15 @@ interface AppState {
 	currentAlbum: catalog.Album | null;
 	currentPlaylistID: string | null;
 	catalog: catalog.Catalog | null;
+	isPlaying: boolean;
 }
 
 let state: AppState = {
 	currentView: 'albums',
 	currentAlbum: null,
 	currentPlaylistID: null,
-	catalog: null
+	catalog: null,
+	isPlaying: false
 };
 
 async function init(): Promise<void> {
@@ -32,8 +34,7 @@ async function init(): Promise<void> {
 	document.getElementById('albums-container')?.addEventListener('click', handleAlbumClick);
 	document.getElementById('tracks-list')?.addEventListener('click', handleTrackClick);
 	document.getElementById('play-button')?.addEventListener('click', handlePlayClick);
-	document.getElementById('pause-button')?.addEventListener('click', handlePauseClick);
-	document.getElementById('resume-button')?.addEventListener('click', handleResumeClick);
+	document.getElementById('pause_resume-button')?.addEventListener('click', handlePauseResumeClick)
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
 
@@ -44,9 +45,8 @@ async function loadAlbums(fp: string): Promise<void> {
 	try {
 		state.catalog = await GetCatalog(fp);
 		const albumsContainer = document.getElementById('albums-container');
-		if (albumsContainer) {
+		if (albumsContainer)
 			renderAlbumsList(state.catalog.Albums, albumsContainer);
-		}
 		navigateToAlbums();
 	} catch (error) {
 		console.error('Failed to load albums:', error);
@@ -57,9 +57,8 @@ async function loadAlbums(fp: string): Promise<void> {
 async function handleSelectDirectory(): Promise<void> {
 	try {
 		const dirPath = await GetDirPath();
-		if (dirPath) {
+		if (dirPath)
 			await loadAlbums(dirPath);
-		}
 	} catch (error) {
 		console.error('Error selecting directory:', error);
 		alert(`Failed to select directory: ${error}`);
@@ -69,43 +68,65 @@ async function handleSelectDirectory(): Promise<void> {
 async function handleAlbumClick(event: MouseEvent): Promise<void> {
 	const target = event.target as HTMLElement;
 	const albumCard = target.closest('.album-card') as HTMLElement;
-	if (albumCard && albumCard.dataset.id) {
+	if (albumCard && albumCard.dataset.id)
 		navigateToAlbumDetails(albumCard.dataset.id);
-	}
 }
 
 async function handlePlayClick(): Promise<void> {
-	if (!state.currentAlbum) return;
-
+	if (!state.currentAlbum) 
+		return;
 	let playlist = await NewPlaylist(state.currentAlbum.Tracks);
 	state.currentPlaylistID = playlist.ID;
+	changePauseResumeButtonState("pause")
+	state.isPlaying = true;
 	await Play(state.currentPlaylistID);
 }
 
-function handlePauseClick(): void {
-	if (!state.currentPlaylistID) return;
-	PauseSong(state.currentPlaylistID);
-}
-
-function handleResumeClick(): void {
-	if (!state.currentPlaylistID) return;
-	ResumeSong(state.currentPlaylistID);
+function handlePauseResumeClick(): void {
+	if (!state.currentPlaylistID)
+		return;
+	if (state.isPlaying) {
+		changePauseResumeButtonState("resume")
+		PauseSong(state.currentPlaylistID)
+	} else {
+		changePauseResumeButtonState("pause")
+		ResumeSong(state.currentPlaylistID)
+	}
+	state.isPlaying = !state.isPlaying
 }
 
 function handlePreviousTrackClick(): void {
-	if (!state.currentPlaylistID) return;
+	if (!state.currentPlaylistID) 
+		return;
+	changePauseResumeButtonState("pause")
+	state.isPlaying = true;
 	PreviousTrack(state.currentPlaylistID);
 }
 
 function handleNextTrackClick(): void {
-	if (!state.currentPlaylistID) return;
+	if (!state.currentPlaylistID) 
+		return;
+	changePauseResumeButtonState("pause")
+	state.isPlaying = true;
 	NextTrack(state.currentPlaylistID);
 }
+
+function changePauseResumeButtonState(to: "pause" | "resume"): void {
+	let btn = document.getElementById('pause_resume-button') as HTMLButtonElement
+	if (to == "pause") {
+		btn.innerHTML = `<i class="material-icons">pause_circle</i>`
+		btn.className = "playback-ctrl pause"
+	} else if (to == "resume") {
+		btn.innerHTML = `<i class="material-icons">play_circle</i>`
+		btn.className = "playback-ctrl resume"
+	}
+}	
 
 function handleTrackClick(event: MouseEvent): void {
 	const target = event.target as HTMLElement;
 	const trackItem = target.closest('.track-item');
-	if (!trackItem) return;
+	if (!trackItem) 
+		return;
 }
 
 function navigateToAlbums(): void {
@@ -128,6 +149,7 @@ async function navigateToAlbumDetails(albumId: string): Promise<void> {
 		state.currentView = 'album-detail';
 		showView('album-detail-view');
 		history.pushState(null, '', `/album/${albumId}`);
+		document.getElementById('play-button')?.addEventListener('click', handlePlayClick);
 	} catch (error) {
 		console.error('Failed to load album details:', error);
 		alert('Failed to load album details. Please try again.');
@@ -140,15 +162,13 @@ export function showView(viewId: string): void {
 		(view as HTMLElement).style.display = 'none';
 	});
 	const viewElement = document.getElementById(viewId);
-	if (viewElement) {
+	if (viewElement)
 		viewElement.style.display = 'block';
-	}
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
 window.addEventListener('popstate', () => {
-	if (state.currentView === 'album-detail') {
+	if (state.currentView === 'album-detail')
 		navigateToAlbums();
-	}
 });

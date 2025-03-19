@@ -118,8 +118,16 @@
 }
 
 .playback-ctrl {
-	height: 40px;
-	width: 40px;
-	margin: 10px;
+	height: 50px;
+	width: 50px;
+	margin-top: 5px;
 	cursor: pointer;
+	background-color: transparent;
+	color: white;
+	border-radius: 50%;
+	border: none;
+}
+
+.playback-ctrl:hover {
+	color: #999;
 }

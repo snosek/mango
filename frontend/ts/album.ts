@@ -38,6 +38,7 @@ export function renderAlbumDetails(album: catalog.Album, infoContainer: HTMLElem
     <div class="album-info__details">
       <div>Tracks: ${album.Tracks.length}</div>
     </div>
+	<button class="button" id="play-button">Play album</button>
   `;
 	tracksContainer.innerHTML = '';
 	const fragment = document.createDocumentFragment();
