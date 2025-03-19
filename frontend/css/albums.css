@@ -136,3 +136,7 @@
 .playback-ctrl:hover {
 	color: #999;
 }
+
+.clickable {
+	cursor: pointer;
+}

@@ -1,13 +1,16 @@
 package catalog
 
 import (
+	"bytes"
 	"encoding/base64"
+	"image/jpeg"
 	"mango/backend/utils"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
 
+	"github.com/KononK/resize"
 	"go.senan.xyz/taglib"
 )
 
@@ -57,11 +60,22 @@ func (a *Album) SetMetadata() {
 }
 
 func (a *Album) EncodeCover() string {
-	cover, err := os.ReadFile(filepath.Join(a.Filepath, "folder.jpg"))
+	file, err := os.Open(filepath.Join(a.Filepath, "folder.jpg"))
 	if err != nil {
 		return ""
 	}
-	return base64.StdEncoding.EncodeToString(cover)
+	defer file.Close()
+	cover, err := jpeg.Decode(file)
+	if err != nil {
+		return ""
+	}
+	m := resize.Resize(300, 300, cover, resize.NearestNeighbor)
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, m, nil)
+	if err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes())
 }
 
 func (a Album) GetAlbumLength() time.Duration {

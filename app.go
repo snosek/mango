@@ -5,6 +5,8 @@ import (
 	"mango/backend/catalog"
 	"mango/backend/player"
 	"mango/backend/utils"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
@@ -18,6 +20,7 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	player.InitSpeaker()
 	a.ctx = ctx
+	runtime.LogSetLogLevel(ctx, 3)
 }
 
 func (a *App) GetDirPath() (string, error) {

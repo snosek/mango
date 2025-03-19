@@ -23,9 +23,9 @@ function createAlbumCard(album: catalog.Album): HTMLElement {
     <div class="album-card__cover">
       <img src="data:image/jpeg;base64,${album.Cover}" alt="${album.Title}"/>
     </div>
-    <div class="album-card__info">
-      <h3 class="album-card__title">${album.Title || 'Unknown Album'}</h3>
-      <p class="album-card__artist">${album.Artist?.join(', ') || 'Unknown Artist'}</p>
+    <div class="album-card__info clickable">
+      <h3 class="album-card__title clickable">${album.Title || 'Unknown Album'}</h3>
+      <p class="album-card__artist clickable">${album.Artist?.join(', ') || 'Unknown Artist'}</p>
     </div>
   `;
 	return element;
