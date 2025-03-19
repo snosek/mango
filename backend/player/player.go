@@ -8,7 +8,7 @@ import (
 	"github.com/gopxl/beep/v2/speaker"
 )
 
-const sampleRate = 44100
+const sampleRate = beep.SampleRate(44100)
 const bufferSize = time.Second / 10
 
 func InitSpeaker() {
@@ -56,7 +56,7 @@ func (p *Player) SetVolume(vol float64) {
 
 func resampleStreamer(streamer beep.Streamer, from, to beep.SampleRate) beep.Streamer {
 	if from != to {
-		return beep.Resample(10, from, to, streamer)
+		return beep.Resample(16, from, to, streamer)
 	}
 	return streamer
 }

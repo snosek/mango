@@ -48,7 +48,7 @@ func (pl *Playlist) PlayCurrent() error {
 	if err != nil {
 		return err
 	}
-	resampled := resampleStreamer(streamer, format.SampleRate, beep.SampleRate(sampleRate))
+	resampled := resampleStreamer(streamer, format.SampleRate, sampleRate)
 	done := make(chan bool)
 	pl.Player = NewPlayer(beep.Seq(resampled, beep.Callback(func() {
 		done <- true
