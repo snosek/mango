@@ -1,19 +1,126 @@
-# README
+# Mango - A Lightweight Music Player
 
-## About
+Mango is a modern, cross-platform music player built with Go and Wails.
 
-This is the official Wails Vanilla template.
+## Features
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+- Clean, minimalist interface
+- Album browser with cover art
+- Album and track details
+- Playback controls
+- Keyboard shortcuts for controlling playback
+- Support for FLAC audio files
 
-## Live Development
+## Music Directory Structure
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+Mango expects your music library to be organized in a specific way:
 
-## Building
+```
+Music/
+├── Album1/
+│   ├── 01 - Track1.flac
+│   ├── 02 - Track2.flac
+│   ├── 03 - Track3.flac
+│   └── folder.jpg
+├── Album2/
+│   ├── 01 - Track1.flac
+│   ├── 02 - Track2.flac
+│   └── folder.jpg
+└── Album3/
+    ├── 01 - Track1.flac
+    ├── 02 - Track2.flac
+    └── folder.jpg
+```
 
-To build a redistributable, production mode package, use `wails build`.
+**Important notes:**
+- Each album should be in its own directory
+- Album directories should contain FLAC files only (MP3, WAV, and OGG support is planned but not implemented yet)
+- Include a `folder.jpg` file in each album directory for cover art
+
+## Keyboard Shortcuts
+
+- `Space` or `K`: Play/Pause
+- `J`: Previous track
+- `L`: Next track
+
+## Building from Source
+
+### Prerequisites
+
+- Go 1.23 or later
+- Node.js and npm
+- Wails CLI v2.10.0 or later
+
+### Install Wails
+
+```bash
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+```
+
+### Build Instructions
+
+#### Clone the repository
+
+```bash
+git clone https://github.com/yourusername/mango.git
+cd mango
+```
+
+#### For all platforms
+
+```bash
+wails build
+```
+
+#### For development
+
+```bash
+wails dev
+```
+
+### Platform-specific Instructions
+
+#### macOS
+
+The built application will be in the `build/bin` directory.
+
+```bash
+# Build for macOS
+wails build -platform darwin
+```
+
+#### Linux
+
+Dependencies:
+- Required packages: `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+
+```bash
+# Install dependencies (Ubuntu/Debian)
+sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev
+
+# Build for Linux
+wails build -platform linux
+```
+
+#### Windows
+
+Dependencies:
+- Windows 10 or later
+- WebView2 runtime
+
+```bash
+# Build for Windows
+wails build -platform windows
+```
+
+## Running the Application
+
+1. After building, run the executable in the `build/bin` directory
+2. Click "Add Music Directory" to select your music folder
+3. Browse your albums and enjoy your music!
+
+## Acknowledgments
+
+- [Wails](https://wails.io) for the Go/JavaScript framework
+- [Beep](https://github.com/gopxl/beep) for audio playback
+- [Taglib](https://github.com/wtolson/go-taglib) for handling music metadata
