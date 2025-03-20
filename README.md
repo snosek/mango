@@ -1,4 +1,4 @@
-# Mango - A Lightweight Music Player
+# Mango - Music Anywhere
 
 Mango is a modern, cross-platform music player built with Go and Wails.
 
