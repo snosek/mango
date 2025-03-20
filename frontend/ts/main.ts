@@ -52,10 +52,18 @@ async function init(): Promise<void> {
 }
 
 async function updateNowPlayingUI(): Promise<void> {
-	let trackElem = document.getElementById("current-track") as HTMLParagraphElement;
-	trackElem.innerHTML = state.currentTrack?.Title as string;
-	trackElem.style.display = "inline";
-
+	let trackElement = document.getElementById("current-track");
+	if (!trackElement || !state.currentTrack) 
+		return;
+	trackElement.innerHTML = `
+        <div class="track-cover">
+            <img src="data:image/jpeg;base64,${state.catalog?.Albums[state.currentTrack.AlbumID].Cover || ''}" alt="${state.currentTrack.Title || 'Album cover'}">
+        </div>
+        <div class="track-details">
+            <div class="track-title">${state.currentTrack.Title || 'Unknown Title'}</div>
+            <div class="track-artist">${state.currentTrack.Artist?.join(', ') || 'Unknown Artist'}</div>
+        </div>
+    `;
 	if (state.currentView === "album-detail") {
 		updateTrackList(state.currentAlbum as catalog.Album);
 	}
