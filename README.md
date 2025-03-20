@@ -62,7 +62,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@latest
 #### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/mango.git
+git clone https://github.com/snosek/mango.git
 cd mango
 ```
 
