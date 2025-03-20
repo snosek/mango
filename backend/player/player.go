@@ -9,7 +9,7 @@ import (
 )
 
 const sampleRate = beep.SampleRate(44100)
-const bufferSize = time.Second / 10
+const bufferSize = time.Second / 8
 
 func InitSpeaker() {
 	sr := beep.SampleRate(sampleRate)

@@ -127,6 +127,7 @@ main {
 
 .spacer {
 	flex: 1;
+	margin-left: 12px
 }
 /* 
 .view {
