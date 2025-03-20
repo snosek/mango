@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/KononK/resize"
@@ -15,6 +16,7 @@ import (
 )
 
 type Album struct {
+	ID       string
 	Title    string
 	Artist   []string
 	Genre    []string
@@ -32,8 +34,9 @@ func NewAlbum(fp string) (Album, error) {
 	}
 	album.Tracks = SortTracks(tracks)
 	album.SetMetadata()
+	album.ID = strings.ToLower(album.Title) + utils.Hash(album.Title)
 	for _, t := range album.Tracks {
-		t.AlbumID = album.Filepath
+		t.AlbumID = album.ID
 	}
 	return album, nil
 }

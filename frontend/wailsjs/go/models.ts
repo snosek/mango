@@ -1,6 +1,7 @@
 export namespace catalog {
 	
 	export class Track {
+	    ID: string;
 	    Title: string;
 	    Artist: string[];
 	    TrackNumber: number;
@@ -15,6 +16,7 @@ export namespace catalog {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
 	        this.Title = source["Title"];
 	        this.Artist = source["Artist"];
 	        this.TrackNumber = source["TrackNumber"];
@@ -25,6 +27,7 @@ export namespace catalog {
 	    }
 	}
 	export class Album {
+	    ID: string;
 	    Title: string;
 	    Artist: string[];
 	    Genre: string[];
@@ -39,6 +42,7 @@ export namespace catalog {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
 	        this.Title = source["Title"];
 	        this.Artist = source["Artist"];
 	        this.Genre = source["Genre"];
@@ -67,7 +71,7 @@ export namespace catalog {
 		}
 	}
 	export class Catalog {
-	    Albums: Album[];
+	    Albums: Record<string, Album>;
 	    Filepath: string;
 	
 	    static createFrom(source: any = {}) {
@@ -76,7 +80,7 @@ export namespace catalog {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Albums = this.convertValues(source["Albums"], Album);
+	        this.Albums = this.convertValues(source["Albums"], Album, true);
 	        this.Filepath = source["Filepath"];
 	    }
 	

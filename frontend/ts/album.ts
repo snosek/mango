@@ -1,24 +1,24 @@
 import { formatDuration } from './utils';
 import { catalog } from '../wailsjs/go/models';
 
-export function renderAlbumsList(albums: catalog.Album[] | undefined, container: HTMLElement): void {
+export function renderAlbumsList(albums: Record<string, catalog.Album> | undefined, container: HTMLElement): void {
 	container.innerHTML = '';
-	if (!albums || albums.length === 0) {
+	if (!albums || Object.keys(albums).length === 0) {
 		container.innerHTML = '<p class="no-albums">No albums found. Click "Add Music Directory" to add your music.</p>';
 		return;
 	}
 	const fragment = document.createDocumentFragment();
-	albums.forEach(album => {
-		const albumElement = createAlbumCard(album);
+	for (const albumID in albums) {
+		const albumElement = createAlbumCard(albums[albumID]);
 		fragment.appendChild(albumElement);
-	});
+	}
 	container.appendChild(fragment);
 }
 
 function createAlbumCard(album: catalog.Album): HTMLElement {
 	const element = document.createElement('div');
 	element.className = 'album-card';
-	element.dataset.id = album.Filepath;
+	element.dataset.ID = album.ID;
 	element.innerHTML = `
     <div class="album-card__cover">
       <img src="data:image/jpeg;base64,${album.Cover}" alt="${album.Title}"/>

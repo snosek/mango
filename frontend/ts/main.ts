@@ -1,6 +1,5 @@
 import { 
 	GetCatalog, 
-	GetAlbum, 
 	GetDirPath, 
 	NewPlaylist, 
 	Play, 
@@ -68,8 +67,8 @@ async function handleSelectDirectory(): Promise<void> {
 async function handleAlbumClick(event: MouseEvent): Promise<void> {
 	const target = event.target as HTMLElement;
 	const albumCard = target.closest('.album-card') as HTMLElement;
-	if (albumCard && albumCard.dataset.id)
-		navigateToAlbumDetails(albumCard.dataset.id);
+	if (albumCard && albumCard.dataset.ID)
+		navigateToAlbumDetails(albumCard.dataset.ID);
 }
 
 async function handlePlayClick(): Promise<void> {
@@ -140,9 +139,11 @@ function navigateToAlbums(): void {
 	history.pushState(null, '', '/');
 }
 
-async function navigateToAlbumDetails(albumId: string): Promise<void> {
+async function navigateToAlbumDetails(albumID: string): Promise<void> {
 	try {
-		state.currentAlbum = await GetAlbum(albumId);
+		if (state.catalog?.Albums[albumID] == null)
+			return;
+		state.currentAlbum = state.catalog?.Albums[albumID];
 		const albumInfoElement = document.getElementById('album-info');
 		const tracksListElement = document.getElementById('tracks-list');
 
@@ -152,7 +153,7 @@ async function navigateToAlbumDetails(albumId: string): Promise<void> {
 
 		state.currentView = 'album-detail';
 		showView('album-detail-view');
-		history.pushState(null, '', `/album/${albumId}`);
+		history.pushState(null, '', `/album/${albumID}`);
 		document.getElementById('play-button')?.addEventListener('click', handlePlayClick);
 	} catch (error) {
 		console.error('Failed to load album details:', error);
@@ -176,3 +177,17 @@ window.addEventListener('popstate', () => {
 	if (state.currentView === 'album-detail')
 		navigateToAlbums();
 });
+
+window.addEventListener('keydown', (e) => {
+	let key = e.key.toLowerCase()
+	if (key == " " || key == "k") {
+		e.preventDefault()
+		handlePauseResumeClick()
+	} else if (key == "j") {
+		e.preventDefault()
+		handlePreviousTrackClick()
+	} else if (key == "l") {
+		e.preventDefault()
+		handleNextTrackClick()
+	}
+})

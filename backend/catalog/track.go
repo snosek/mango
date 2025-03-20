@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"mango/backend/utils"
 	"strconv"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 )
 
 type Track struct {
+	ID          string
 	Title       string
 	Artist      []string
 	TrackNumber uint
@@ -20,6 +22,7 @@ type Track struct {
 func NewTrack(fp string) Track {
 	t := Track{Filepath: fp}
 	t.SetMetadata()
+	t.ID = utils.Hash(t.Title)
 	return t
 }
 

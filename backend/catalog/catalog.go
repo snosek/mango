@@ -5,7 +5,7 @@ import (
 )
 
 type Catalog struct {
-	Albums   []*Album
+	Albums   map[string]*Album
 	Filepath string
 }
 
@@ -15,12 +15,13 @@ func NewCatalog(fp string) (Catalog, error) {
 	if err != nil {
 		return catalog, err
 	}
+	catalog.Albums = make(map[string]*Album)
 	for _, dir := range directories {
 		album, err := NewAlbum(dir)
 		if err != nil {
 			continue
 		}
-		catalog.Albums = append(catalog.Albums, &album)
+		catalog.Albums[album.ID] = &album
 	}
 	return catalog, nil
 }
