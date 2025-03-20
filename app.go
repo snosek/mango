@@ -57,16 +57,17 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 }
 
 func (a *App) Play(playlistID string) {
-	if pl, exists := player.GetPlaylist(playlistID); exists {
-		pl.PlayCurrent()
+	pl, exists := player.GetPlaylist(playlistID)
+	if !exists {
+		return
 	}
+	pl.PlayCurrent(a.ctx)
 }
 
 func (a *App) PauseSong(playlistID string) {
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		pl.Player.Pause()
 	}
-
 }
 
 func (a *App) ResumeSong(playlistID string) {
@@ -77,19 +78,26 @@ func (a *App) ResumeSong(playlistID string) {
 
 func (a *App) PreviousTrack(playlistID string) {
 	if pl, exists := player.GetPlaylist(playlistID); exists {
-		pl.PreviousTrack()
+		pl.PreviousTrack(a.ctx)
 	}
 }
 
 func (a *App) NextTrack(playlistID string) {
 	if pl, exists := player.GetPlaylist(playlistID); exists {
-		pl.NextTrack()
+		pl.NextTrack(a.ctx)
 	}
 }
 
 func (a *App) GetPlaylist(playlistID string) *player.Playlist {
 	if pl, exists := player.GetPlaylist(playlistID); exists {
 		return pl
+	}
+	return nil
+}
+
+func (a *App) GetCurrentTrack(playlistID string) *catalog.Track {
+	if pl, exists := player.GetPlaylist(playlistID); exists && pl.Current < len(pl.Tracks) {
+		return pl.Tracks[pl.Current]
 	}
 	return nil
 }

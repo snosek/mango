@@ -8,22 +8,27 @@ import {
 	PreviousTrack, 
 	NextTrack 
 } from '../wailsjs/go/main/App';
-import { renderAlbumsList, renderAlbumDetails } from './album';
+import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
+import { EventsOn } from '../wailsjs/runtime';
 
 interface AppState {
 	currentView: 'albums' | 'album-detail';
 	currentAlbum: catalog.Album | null;
 	currentPlaylistID: string | null;
+	currentPlaylistPosistion: number | null;
 	catalog: catalog.Catalog | null;
+	currentTrack: catalog.Track | null;
 	isPlaying: boolean;
 }
 
-let state: AppState = {
+export let state: AppState = {
 	currentView: 'albums',
 	currentAlbum: null,
 	currentPlaylistID: null,
+	currentPlaylistPosistion: null,
 	catalog: null,
+	currentTrack: null,
 	isPlaying: false
 };
 
@@ -37,7 +42,23 @@ async function init(): Promise<void> {
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
 
+	EventsOn("track:playing", (track, playlistPosition) => {
+		state.currentTrack = track;
+		state.currentPlaylistPosistion = playlistPosition;
+		updateNowPlayingUI();
+	})
+
 	loadAlbums("");
+}
+
+async function updateNowPlayingUI(): Promise<void> {
+	let trackElem = document.getElementById("current-track") as HTMLParagraphElement;
+	trackElem.innerHTML = state.currentTrack?.Title as string;
+	trackElem.style.display = "inline";
+
+	if (state.currentView === "album-detail") {
+		updateTrackList(state.currentAlbum as catalog.Album);
+	}
 }
 
 async function loadAlbums(fp: string): Promise<void> {

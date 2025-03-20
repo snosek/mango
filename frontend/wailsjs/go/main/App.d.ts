@@ -9,6 +9,8 @@ export function GetAlbums(arg1:string):Promise<Array<string>>;
 
 export function GetCatalog(arg1:string):Promise<catalog.Catalog>;
 
+export function GetCurrentTrack(arg1:string):Promise<catalog.Track>;
+
 export function GetDirPath():Promise<string>;
 
 export function GetPlaylist(arg1:string):Promise<player.Playlist>;

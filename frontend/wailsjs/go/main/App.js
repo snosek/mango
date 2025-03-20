@@ -14,6 +14,10 @@ export function GetCatalog(arg1) {
   return window['go']['main']['App']['GetCatalog'](arg1);
 }
 
+export function GetCurrentTrack(arg1) {
+  return window['go']['main']['App']['GetCurrentTrack'](arg1);
+}
+
 export function GetDirPath() {
   return window['go']['main']['App']['GetDirPath']();
 }

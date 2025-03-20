@@ -1,6 +1,7 @@
 package player
 
 import (
+	"context"
 	"fmt"
 	"mango/backend/catalog"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/flac"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type Playlist struct {
@@ -38,13 +40,14 @@ func GetPlaylist(id string) (*Playlist, bool) {
 	return pl, exists
 }
 
-func (pl *Playlist) PlayCurrent() error {
+func (pl *Playlist) PlayCurrent(ctx context.Context) error {
 	for _, p := range playlists {
 		if p.Player != nil {
 			p.Player.Pause()
 		}
 	}
-	streamer, format, err := decodeFLAC(pl.Tracks[pl.Current].Filepath)
+	currentTrack := pl.Tracks[pl.Current]
+	streamer, format, err := decodeFLAC(currentTrack.Filepath)
 	if err != nil {
 		return err
 	}
@@ -53,26 +56,27 @@ func (pl *Playlist) PlayCurrent() error {
 	pl.Player = NewPlayer(beep.Seq(resampled, beep.Callback(func() {
 		done <- true
 	})))
+	runtime.EventsEmit(ctx, "track:playing", currentTrack, pl.Current)
 	pl.Player.Play()
 	go func() {
 		<-done
-		pl.NextTrack()
+		pl.NextTrack(ctx)
 	}()
 	return nil
 }
 
-func (pl *Playlist) NextTrack() error {
+func (pl *Playlist) NextTrack(ctx context.Context) error {
 	if pl.Current < len(pl.Tracks)-1 {
 		pl.Current++
-		return pl.PlayCurrent()
+		return pl.PlayCurrent(ctx)
 	}
 	return nil
 }
 
-func (pl *Playlist) PreviousTrack() error {
+func (pl *Playlist) PreviousTrack(ctx context.Context) error {
 	if pl.Current > 0 {
 		pl.Current--
-		return pl.PlayCurrent()
+		return pl.PlayCurrent(ctx)
 	}
 	return nil
 }

@@ -1,5 +1,6 @@
 import { formatDuration } from './utils';
 import { catalog } from '../wailsjs/go/models';
+import { state } from './main'
 
 export function renderAlbumsList(albums: Record<string, catalog.Album> | undefined, container: HTMLElement): void {
 	container.innerHTML = '';
@@ -46,11 +47,30 @@ export function renderAlbumDetails(album: catalog.Album, infoContainer: HTMLElem
 		fragment.appendChild(createTrackItem(track, index));
 	});
 	tracksContainer.appendChild(fragment);
+	updateTrackList(album);
+}
+
+export function updateTrackList(album: catalog.Album): void {
+	if (album.ID === state.currentTrack?.AlbumID) {
+		let tracksItems = document.getElementsByClassName('track-item')
+		for (let i = 0; i < tracksItems.length; i++) {
+			tracksItems[i].className = 'track-item';
+			const num = tracksItems[i].querySelector('span') as HTMLSpanElement;
+			num.className = 'track-item__number';
+			num.innerHTML = `${i+1}`;
+		}
+		const currentTrack = document.getElementById(`song-${state.currentPlaylistPosistion}`) as HTMLDivElement
+		currentTrack.className += ' currently-playing'
+		const num = currentTrack.querySelector('span') as HTMLSpanElement
+		num.className += ' currently-playing'
+		num.innerHTML = '>>>'
+	}
 }
 
 function createTrackItem(track: catalog.Track, index: number): HTMLElement {
 	const element = document.createElement('div');
 	element.className = 'track-item';
+	element.id = `song-${index}`
 	element.dataset.index = index.toString();
 	element.dataset.filepath = track.Filepath;
 	const trackNumber = track.TrackNumber > 0 ? track.TrackNumber : index + 1;

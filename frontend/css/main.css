@@ -57,14 +57,36 @@ main {
 }
 
 .footer {
+	display: flex;
+	align-items: center;
 	position: fixed;
 	bottom: 0;
 	width: 100%;
 	height: 80px;
 	background-color: #2c3e50;
 	color: white;
-	padding: 0.5rem;
-	text-align: center;
+	padding: 0 1rem;
+	box-sizing: border-box;
+}
+
+#current-track {
+	flex: 1;
+	text-align: left;
+	padding-right: 1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.controls {
+	display: flex;
+	gap: 15px;
+	justify-content: center;
+	align-items: center;
+}
+
+.spacer {
+	flex: 1;
 }
 /* 
 .view {
