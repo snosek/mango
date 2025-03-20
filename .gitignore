@@ -1,10 +1,9 @@
 build/bin
 frontend/dist
 frontend/node_modules
+frontend/wailsjs
 
 .DS_Store
 *.flac
 
 test
-
-frontend/assets/covers
