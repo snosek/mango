@@ -62,7 +62,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@latest
 #### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/mango.git
+git clone https://github.com/snosek/mango.git
 cd mango
 ```
 
@@ -92,11 +92,11 @@ wails build -platform darwin
 #### Linux
 
 Dependencies:
-- Required packages: `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
+- Required packages: `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`, `libasound2-dev`
 
 ```bash
 # Install dependencies (Ubuntu/Debian)
-sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev
+sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev libasound2-dev
 
 # Build for Linux
 wails build -platform linux
