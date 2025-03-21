@@ -6,9 +6,11 @@ import (
 	"mango/backend/catalog"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/flac"
+	"github.com/gopxl/beep/v2/speaker"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -56,13 +58,50 @@ func (pl *Playlist) PlayCurrent(ctx context.Context) error {
 	pl.Player = NewPlayer(beep.Seq(resampled, beep.Callback(func() {
 		done <- true
 	})))
+	ctrl := make(chan string)
+	runtime.EventsOn(ctx, "ctrl:request", func(optionalData ...interface{}) {
+		if len(optionalData) > 0 {
+			p, ok := optionalData[1].(string)
+			if !ok {
+				return
+			}
+			if p == pl.ID {
+				if r, ok := optionalData[0].(string); ok {
+					ctrl <- r
+				}
+				ctrl <- p
+			}
+		}
+	})
 	runtime.EventsEmit(ctx, "track:playing", currentTrack, pl.Current)
 	pl.Player.Play()
-	go func() {
-		<-done
-		pl.NextTrack(ctx)
-	}()
-	return nil
+	for {
+		select {
+		case <-done:
+			pl.NextTrack(ctx)
+		case <-time.After(time.Second):
+			speaker.Lock()
+			runtime.EventsEmit(ctx, "second:passed", format.SampleRate.D(streamer.Position()).Round(time.Second), pl.ID)
+			speaker.Unlock()
+		case r := <-ctrl:
+			p := <-ctrl
+			switch r {
+			case "pause":
+				playlists[p].Player.Pause()
+				break
+			case "resume":
+				playlists[p].Player.Resume()
+				break
+			case "next":
+				playlists[p].NextTrack(ctx)
+				break
+			case "previous":
+				playlists[p].PreviousTrack(ctx)
+				break
+			}
+			break
+		}
+	}
 }
 
 func (pl *Playlist) NextTrack(ctx context.Context) error {

@@ -3,14 +3,12 @@ import {
 	GetDirPath, 
 	NewPlaylist, 
 	Play, 
-	PauseSong, 
-	ResumeSong, 
-	PreviousTrack, 
-	NextTrack 
+
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
-import { EventsOn } from '../wailsjs/runtime';
+import { EventsOn, EventsEmit } from '../wailsjs/runtime';
+import { formatDuration } from './utils';
 
 interface AppState {
 	currentView: 'albums' | 'album-detail';
@@ -19,6 +17,7 @@ interface AppState {
 	currentPlaylistPosistion: number | null;
 	catalog: catalog.Catalog | null;
 	currentTrack: catalog.Track | null;
+	timeElapsed: number | null;
 	isPlaying: boolean;
 }
 
@@ -29,6 +28,7 @@ export let state: AppState = {
 	currentPlaylistPosistion: null,
 	catalog: null,
 	currentTrack: null,
+	timeElapsed: null,
 	isPlaying: false
 };
 
@@ -48,6 +48,13 @@ async function init(): Promise<void> {
 		updateNowPlayingUI();
 	})
 
+	EventsOn("second:passed", (timeElapsed, playlistID) => {
+		console.log(timeElapsed);
+		if (state.currentPlaylistID === playlistID)
+			state.timeElapsed = timeElapsed;
+		updateNowPlayingUI();
+	})
+
 	loadAlbums("");
 }
 
@@ -63,6 +70,9 @@ async function updateNowPlayingUI(): Promise<void> {
             <div class="track-title">${state.currentTrack.Title || 'Unknown Title'}</div>
             <div class="track-artist">${state.currentTrack.Artist?.join(', ') || 'Unknown Artist'}</div>
         </div>
+		<div>
+			${formatDuration(state.timeElapsed!)} - ${formatDuration(state.currentTrack.Length)}
+		</div>
     `;
 	if (state.currentView === "album-detail") {
 		updateTrackList(state.currentAlbum as catalog.Album);
@@ -119,10 +129,12 @@ function handlePauseResumeClick(): void {
 		return;
 	if (state.isPlaying) {
 		changePauseResumeButtonState("resume")
-		PauseSong(state.currentPlaylistID)
+		EventsEmit("ctrl:request", "pause", state.currentPlaylistID)
+		// PauseSong(state.currentPlaylistID)
 	} else {
 		changePauseResumeButtonState("pause")
-		ResumeSong(state.currentPlaylistID)
+		EventsEmit("ctrl:request", "resume", state.currentPlaylistID)
+		// ResumeSong(state.currentPlaylistID)
 	}
 	state.isPlaying = !state.isPlaying
 }
@@ -132,7 +144,8 @@ function handlePreviousTrackClick(): void {
 		return;
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
-	PreviousTrack(state.currentPlaylistID);
+	EventsEmit("ctrl:request", "previous", state.currentPlaylistID)
+	// PreviousTrack(state.currentPlaylistID);
 }
 
 function handleNextTrackClick(): void {
@@ -140,7 +153,8 @@ function handleNextTrackClick(): void {
 		return;
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
-	NextTrack(state.currentPlaylistID);
+	EventsEmit("ctrl:request", "next", state.currentPlaylistID)
+	// NextTrack(state.currentPlaylistID);
 }
 
 function changePauseResumeButtonState(to: "pause" | "resume"): void {
