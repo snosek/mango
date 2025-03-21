@@ -51,3 +51,7 @@ func isAudioFile(fileName string) bool {
 	ext := filepath.Ext(fileName)
 	return ext == ".flac" || ext == ".mp3" || ext == ".wav" || ext == ".ogg"
 }
+
+func IsValidCtrlRequest(request string) bool {
+	return request == "pause" || request == "resume" || request == "next" || request == "previous"
+}

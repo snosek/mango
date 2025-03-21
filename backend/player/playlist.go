@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mango/backend/catalog"
+	"mango/backend/utils"
 	"os"
 	"sync"
 	"time"
@@ -60,20 +61,21 @@ func (pl *Playlist) PlayCurrent(ctx context.Context) error {
 	})))
 	ctrl := make(chan string)
 	runtime.EventsOn(ctx, "ctrl:request", func(optionalData ...interface{}) {
-		if len(optionalData) > 0 {
-			p, ok := optionalData[1].(string)
-			if !ok {
+		if len(optionalData) > 1 {
+			playlist, ok := optionalData[1].(string)
+			if !ok || playlist != pl.ID {
 				return
 			}
-			if p == pl.ID {
-				if r, ok := optionalData[0].(string); ok {
-					ctrl <- r
-				}
-				ctrl <- p
+			request, ok := optionalData[0].(string)
+			if !ok || !utils.IsValidCtrlRequest(request) {
+				return
 			}
+			ctrl <- request
+			ctrl <- playlist
 		}
 	})
 	runtime.EventsEmit(ctx, "track:playing", currentTrack, pl.Current)
+	runtime.EventsEmit(ctx, "second:passed", 0, pl.ID)
 	pl.Player.Play()
 	for {
 		select {
@@ -88,18 +90,13 @@ func (pl *Playlist) PlayCurrent(ctx context.Context) error {
 			switch r {
 			case "pause":
 				playlists[p].Player.Pause()
-				break
 			case "resume":
 				playlists[p].Player.Resume()
-				break
 			case "next":
 				playlists[p].NextTrack(ctx)
-				break
 			case "previous":
 				playlists[p].PreviousTrack(ctx)
-				break
 			}
-			break
 		}
 	}
 }

@@ -52,10 +52,17 @@ async function init(): Promise<void> {
 		console.log(timeElapsed);
 		if (state.currentPlaylistID === playlistID)
 			state.timeElapsed = timeElapsed;
-		updateNowPlayingUI();
+		updateTimeControlUI();
 	})
 
 	loadAlbums("");
+}
+
+async function updateTimeControlUI(): Promise<void> {
+	let timeCtrlElement = document.getElementById("time-control")
+	if (!timeCtrlElement || !state.currentTrack || !state.timeElapsed)
+		return;
+	timeCtrlElement.innerHTML = `${formatDuration(state.timeElapsed)} - ${formatDuration(state.currentTrack.Length)}`
 }
 
 async function updateNowPlayingUI(): Promise<void> {
@@ -70,8 +77,8 @@ async function updateNowPlayingUI(): Promise<void> {
             <div class="track-title">${state.currentTrack.Title || 'Unknown Title'}</div>
             <div class="track-artist">${state.currentTrack.Artist?.join(', ') || 'Unknown Artist'}</div>
         </div>
-		<div>
-			${formatDuration(state.timeElapsed!)} - ${formatDuration(state.currentTrack.Length)}
+		<div id="time-control">
+			0:00 - ${formatDuration(state.currentTrack.Length)}
 		</div>
     `;
 	if (state.currentView === "album-detail") {
