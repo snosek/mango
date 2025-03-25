@@ -134,21 +134,6 @@ func handlePlaylistControl(request string, pl *Playlist, ctx context.Context, s 
 		speaker.Lock()
 		err = s.Seek(samplePosition)
 		speaker.Unlock()
-		if err != nil {
-			speaker.Lock()
-			runtime.LogInfo(ctx, fmt.Sprintf("Seek failed: %v", err.Error()))
-			for offset := 0; offset < 1000; offset++ {
-				if seekErr := s.Seek(samplePosition + offset); seekErr == nil {
-					speaker.Unlock()
-					break
-				}
-				if seekErr := s.Seek(samplePosition - offset); seekErr == nil {
-					speaker.Unlock()
-					break
-				}
-			}
-			speaker.Unlock()
-		}
 		updateCurrentPosition(ctx, s, f, pl)
 	default:
 		runtime.LogInfo(ctx, "Unknown request")
