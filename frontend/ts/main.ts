@@ -49,7 +49,6 @@ async function init(): Promise<void> {
 	})
 
 	EventsOn("second:passed", (timeElapsed, playlistID) => {
-		console.log(timeElapsed);
 		if (state.currentPlaylistID === playlistID)
 			state.timeElapsed = timeElapsed;
 		updateTimeControlUI();
