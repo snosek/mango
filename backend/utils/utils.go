@@ -2,18 +2,11 @@ package utils
 
 import (
 	"context"
-	"hash/fnv"
 	"os"
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
-
-func Hash(s string) string {
-	hash := fnv.New32a()
-	hash.Write([]byte(s))
-	return string(hash.Sum([]byte{}))
-}
 
 func GetDirPath(ctx context.Context) (string, error) {
 	return runtime.OpenDirectoryDialog(ctx, runtime.OpenDialogOptions{})
@@ -54,4 +47,37 @@ func isAudioFile(fileName string) bool {
 
 func IsValidCtrlRequest(request string) bool {
 	return request == "pause" || request == "resume" || request == "next" || request == "previous"
+}
+
+func FirstOrEmpty(s []string) string {
+	if len(s) > 0 {
+		return s[0]
+	}
+	return ""
+}
+
+func FirstOrFallback(primary, fallback []string) []string {
+	if len(primary) > 0 {
+		return primary
+	}
+	return fallback
+}
+
+func HashTitle(title string) string {
+	h := fnv32a(title)
+	return string(h)
+}
+
+func fnv32a(s string) []byte {
+	hash := uint32(2166136261)
+	for i := 0; i < len(s); i++ {
+		hash ^= uint32(s[i])
+		hash *= 16777619
+	}
+	b := make([]byte, 4)
+	b[0] = byte(hash >> 24)
+	b[1] = byte(hash >> 16)
+	b[2] = byte(hash >> 8)
+	b[3] = byte(hash)
+	return b
 }

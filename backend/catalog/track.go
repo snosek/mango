@@ -21,28 +21,35 @@ type Track struct {
 
 func NewTrack(fp string) Track {
 	t := Track{Filepath: fp}
-	t.SetMetadata()
-	t.ID = utils.Hash(t.Title)
+	t.populateMetadata()
+	t.ID = utils.HashTitle(t.Title)
 	return t
 }
 
-func (t *Track) SetMetadata() {
+func (t *Track) populateMetadata() {
 	tags, err := taglib.ReadTags(t.Filepath)
 	if err != nil {
 		return
 	}
-	if tags[taglib.Title] != nil {
-		t.Title = tags[taglib.Title][0]
-	}
-	if tags[taglib.TrackNumber] != nil {
-		if trackNum, err := strconv.Atoi(tags[taglib.TrackNumber][0]); err == nil {
-			t.TrackNumber = uint(trackNum)
-		}
-	}
-	t.Artist = tags[taglib.Artist]
 
-	if props, err := taglib.ReadProperties(t.Filepath); err == nil {
+	t.Title = utils.FirstOrEmpty(tags[taglib.Title])
+	t.Artist = tags[taglib.Artist]
+	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber])
+
+	props, err := taglib.ReadProperties(t.Filepath)
+	if err == nil {
 		t.Length = props.Length
 		t.SampleRate = props.SampleRate
 	}
+}
+
+func parseTrackNumber(nums []string) uint {
+	if len(nums) == 0 {
+		return 0
+	}
+	num, err := strconv.Atoi(nums[0])
+	if err != nil {
+		return 0
+	}
+	return uint(num)
 }

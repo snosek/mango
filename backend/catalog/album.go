@@ -33,15 +33,15 @@ func NewAlbum(fp string) (Album, error) {
 		return album, err
 	}
 	album.Tracks = SortTracks(tracks)
-	album.SetMetadata()
-	album.ID = strings.ToLower(album.Title) + utils.Hash(album.Title)
+	album.populateMetadata()
+	album.ID = strings.ToLower(album.Title) + utils.HashTitle(album.Title)
 	for _, t := range album.Tracks {
 		t.AlbumID = album.ID
 	}
 	return album, nil
 }
 
-func (a *Album) SetMetadata() {
+func (a *Album) populateMetadata() {
 	if len(a.Tracks) == 0 {
 		return
 	}
@@ -49,20 +49,14 @@ func (a *Album) SetMetadata() {
 	if err != nil {
 		return
 	}
-	if tags[taglib.Album] != nil {
-		a.Title = tags[taglib.Album][0]
-	}
-	if tags[taglib.AlbumArtist] != nil {
-		a.Artist = tags[taglib.AlbumArtist]
-	} else {
-		a.Artist = tags[taglib.Artist]
-	}
+	a.Title = utils.FirstOrEmpty(tags[taglib.Album])
+	a.Artist = utils.FirstOrFallback(tags[taglib.AlbumArtist], tags[taglib.Artist])
 	a.Genre = tags[taglib.Genre]
-	a.Length = a.GetAlbumLength()
-	a.Cover = a.EncodeCover()
+	a.Length = a.calculateLength()
+	a.Cover = a.encodeCover()
 }
 
-func (a *Album) EncodeCover() string {
+func (a *Album) encodeCover() string {
 	file, err := os.Open(filepath.Join(a.Filepath, "folder.jpg"))
 	if err != nil {
 		return ""
@@ -81,12 +75,12 @@ func (a *Album) EncodeCover() string {
 	return base64.StdEncoding.EncodeToString(buf.Bytes())
 }
 
-func (a Album) GetAlbumLength() time.Duration {
-	var totalLength time.Duration
+func (a Album) calculateLength() time.Duration {
+	var total time.Duration
 	for _, t := range a.Tracks {
-		totalLength += t.Length
+		total += t.Length
 	}
-	return totalLength
+	return total
 }
 
 func (a Album) FetchTracks() ([]*Track, error) {

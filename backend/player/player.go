@@ -2,6 +2,7 @@ package player
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,12 +16,13 @@ import (
 	"github.com/gopxl/beep/v2/wav"
 )
 
-const sampleRate = beep.SampleRate(44100)
-const bufferSize = time.Second / 7
+const (
+	sampleRate = beep.SampleRate(44100)
+	bufferSize = time.Second / 7
+)
 
 func InitSpeaker() {
-	sr := beep.SampleRate(sampleRate)
-	speaker.Init(sr, sr.N(bufferSize))
+	speaker.Init(sampleRate, sampleRate.N(bufferSize))
 }
 
 type Player struct {
@@ -29,11 +31,9 @@ type Player struct {
 	volume   *effects.Volume
 }
 
-func NewPlayer(st beep.Streamer, sr beep.SampleRate, ch chan bool) *Player {
+func newPlayer(st beep.Streamer, sr beep.SampleRate, done chan bool) *Player {
 	resampled := resampleStreamer(st, sr, sampleRate)
-	streamer := beep.Seq(resampled, beep.Callback(func() {
-		ch <- true
-	}))
+	streamer := beep.Seq(resampled, beep.Callback(func() { done <- true }))
 	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
 	volume := &effects.Volume{Streamer: ctrl, Base: 2, Volume: 0}
 	return &Player{
@@ -43,26 +43,26 @@ func NewPlayer(st beep.Streamer, sr beep.SampleRate, ch chan bool) *Player {
 	}
 }
 
-func (p *Player) Play() {
+func (p *Player) play() {
 	speaker.Play(p.volume)
 }
 
 func (p *Player) Pause() {
 	speaker.Lock()
+	defer speaker.Unlock()
 	p.ctrl.Paused = true
-	speaker.Unlock()
 }
 
 func (p *Player) Resume() {
 	speaker.Lock()
+	defer speaker.Unlock()
 	p.ctrl.Paused = false
-	speaker.Unlock()
 }
 
-func (p *Player) SetVolume(vol float64) {
+func (p *Player) setVolume(vol float64) {
 	speaker.Lock()
+	defer speaker.Unlock()
 	p.volume.Volume = vol
-	speaker.Unlock()
 }
 
 func resampleStreamer(streamer beep.Streamer, from, to beep.SampleRate) beep.Streamer {
@@ -72,42 +72,38 @@ func resampleStreamer(streamer beep.Streamer, from, to beep.SampleRate) beep.Str
 	return streamer
 }
 
-func decodeAudioFile(filePath, fileType string) (beep.StreamSeekCloser, beep.Format, error) {
+type decoderFunc func(io.Reader) (beep.StreamSeekCloser, beep.Format, error)
+
+func decodeTrack(filePath string) (beep.StreamSeekCloser, beep.Format, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, beep.Format{}, err
 	}
-	var (
-		streamer beep.StreamSeekCloser
-		format   beep.Format
-	)
-	switch fileType {
-	case "flac":
-		streamer, format, err = flac.Decode(f)
-	case "mp3":
-		streamer, format, err = mp3.Decode(f)
-	case "wav":
-		streamer, format, err = wav.Decode(f)
-	case "vorbis":
-		streamer, format, err = vorbis.Decode(f)
+	decoders := map[string]decoderFunc{
+		".flac": wrapDecoder(flac.Decode),
+		".mp3":  wrapReadCloserDecoder(mp3.Decode),
+		".wav":  wrapDecoder(wav.Decode),
+		".ogg":  wrapReadCloserDecoder(vorbis.Decode),
 	}
-	if err != nil {
-		return nil, beep.Format{}, err
+	decoder, ok := decoders[filepath.Ext(filePath)]
+	if !ok {
+		return nil, beep.Format{}, errors.New("unsupported file format")
 	}
-	return streamer, format, nil
+	return decoder(f)
 }
 
-func decodeTrack(filePath string) (beep.StreamSeekCloser, beep.Format, error) {
-	switch filepath.Ext(filePath) {
-	case ".flac":
-		return decodeAudioFile(filePath, "flac")
-	case ".mp3":
-		return decodeAudioFile(filePath, "mp3")
-	case ".wav":
-		return decodeAudioFile(filePath, "wav")
-	case ".ogg":
-		return decodeAudioFile(filePath, "vorbis")
-	default:
-		return nil, beep.Format{}, errors.New("Unsupported file format.")
+func wrapDecoder(decode func(io.Reader) (beep.StreamSeekCloser, beep.Format, error)) decoderFunc {
+	return func(r io.Reader) (beep.StreamSeekCloser, beep.Format, error) {
+		return decode(r)
+	}
+}
+
+func wrapReadCloserDecoder(decode func(io.ReadCloser) (beep.StreamSeekCloser, beep.Format, error)) decoderFunc {
+	return func(r io.Reader) (beep.StreamSeekCloser, beep.Format, error) {
+		readCloser, ok := r.(io.ReadCloser)
+		if !ok {
+			readCloser = io.NopCloser(r)
+		}
+		return decode(readCloser)
 	}
 }
