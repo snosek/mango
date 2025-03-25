@@ -41,6 +41,8 @@ async function init(): Promise<void> {
 	document.getElementById('pause_resume-button')?.addEventListener('click', handlePauseResumeClick)
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
+	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
+	document.getElementById('progress-bar')?.addEventListener('click', handleProgressBarClick);
 
 	EventsOn("track:playing", (track, playlistPosition) => {
 		state.currentTrack = track;
@@ -57,17 +59,54 @@ async function init(): Promise<void> {
 	loadAlbums("");
 }
 
-async function updateTimeControlUI(): Promise<void> {
-	let timeCtrlElement = document.getElementById("time-control")
-	if (!timeCtrlElement || !state.currentTrack || !state.timeElapsed)
+async function handleProgressBarClick(event: MouseEvent): Promise<void> {
+	let progBar = document.getElementById('progress-bar') as HTMLDivElement
+	let leftX = progBar.getBoundingClientRect().left
+	let spanX = progBar.getBoundingClientRect().right - leftX
+	let userX = event.clientX
+	let ratio = (userX-leftX)/spanX
+	let fill = document.getElementById("progress-bar-fill") as HTMLDivElement
+	if (!fill)
 		return;
-	timeCtrlElement.innerHTML = `${formatDuration(state.timeElapsed)} - ${formatDuration(state.currentTrack.Length)}`
+	fill.style.width = `${ratio}%`
+	if (!state.currentPlaylistID)
+		return;
+	EventsEmit("ctrl:request", "changePosition", state.currentPlaylistID,`${ratio}`)
 }
+
+async function updateTimeControlUI(): Promise<void> {
+	let elapsedTimeElement = document.querySelector('.progress-time-elapsed');
+	let totalTimeElement = document.querySelector('.progress-time-total');
+	let progressBarFill = document.querySelector('.progress-bar-fill');
+
+	if (!elapsedTimeElement || !totalTimeElement || !progressBarFill ||
+		!state.currentTrack || state.timeElapsed === null)
+		return;
+
+	elapsedTimeElement.textContent = formatDuration(state.timeElapsed);
+
+	if (totalTimeElement.textContent === '0:00') {
+		totalTimeElement.textContent = formatDuration(state.currentTrack.Length);
+	}
+
+	const progress = (state.timeElapsed / state.currentTrack.Length) * 100;
+	(progressBarFill as HTMLElement).style.width = `${progress}%`;
+}
+
 
 async function updateNowPlayingUI(): Promise<void> {
 	let trackElement = document.getElementById("current-track");
-	if (!trackElement || !state.currentTrack) 
+	let totalTimeElement = document.querySelector('.progress-time-total');
+	let elapsedTimeElement = document.querySelector('.progress-time-elapsed');
+	let progressBarFill = document.querySelector('.progress-bar-fill');
+
+	if (!trackElement || !state.currentTrack)
 		return;
+
+	if (totalTimeElement) totalTimeElement.textContent = '0:00';
+	if (elapsedTimeElement) elapsedTimeElement.textContent = '0:00';
+	if (progressBarFill) (progressBarFill as HTMLElement).style.width = '0%';
+
 	trackElement.innerHTML = `
         <div class="track-cover">
             <img src="data:image/jpeg;base64,${state.catalog?.Albums[state.currentTrack.AlbumID].Cover || ''}" alt="${state.currentTrack.Title || 'Album cover'}">
@@ -76,14 +115,13 @@ async function updateNowPlayingUI(): Promise<void> {
             <div class="track-title">${state.currentTrack.Title || 'Unknown Title'}</div>
             <div class="track-artist">${state.currentTrack.Artist?.join(', ') || 'Unknown Artist'}</div>
         </div>
-		<div id="time-control">
-			0:00 - ${formatDuration(state.currentTrack.Length)}
-		</div>
     `;
+
 	if (state.currentView === "album-detail") {
 		updateTrackList(state.currentAlbum as catalog.Album);
 	}
 }
+
 
 async function loadAlbums(fp: string): Promise<void> {
 	try {
@@ -123,8 +161,10 @@ async function handlePlayClick(): Promise<void> {
 	state.currentPlaylistID = playlist.ID;
 	let nextBtn = document.getElementById('next_track-button') as HTMLButtonElement
 	let prevBtn = document.getElementById('previous_track-button') as HTMLButtonElement
+	let progBar = document.getElementById('progress-bar') as HTMLDivElement
 	nextBtn.className = "playback-ctrl"
 	prevBtn.className = "playback-ctrl"
+	progBar.className = "progress-bar"
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
 	await Play(state.currentPlaylistID);
@@ -136,11 +176,9 @@ function handlePauseResumeClick(): void {
 	if (state.isPlaying) {
 		changePauseResumeButtonState("resume")
 		EventsEmit("ctrl:request", "pause", state.currentPlaylistID)
-		// PauseSong(state.currentPlaylistID)
 	} else {
 		changePauseResumeButtonState("pause")
 		EventsEmit("ctrl:request", "resume", state.currentPlaylistID)
-		// ResumeSong(state.currentPlaylistID)
 	}
 	state.isPlaying = !state.isPlaying
 }
@@ -151,7 +189,6 @@ function handlePreviousTrackClick(): void {
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
 	EventsEmit("ctrl:request", "previous", state.currentPlaylistID)
-	// PreviousTrack(state.currentPlaylistID);
 }
 
 function handleNextTrackClick(): void {
@@ -160,7 +197,6 @@ function handleNextTrackClick(): void {
 	changePauseResumeButtonState("pause")
 	state.isPlaying = true;
 	EventsEmit("ctrl:request", "next", state.currentPlaylistID)
-	// NextTrack(state.currentPlaylistID);
 }
 
 function changePauseResumeButtonState(to: "pause" | "resume"): void {

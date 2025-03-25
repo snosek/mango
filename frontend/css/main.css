@@ -55,9 +55,9 @@ main {
 	margin-top: 60px;
 	margin-bottom: 80px;
 }
-
 .footer {
 	display: flex;
+	flex-direction: row;
 	align-items: center;
 	position: fixed;
 	bottom: 0;
@@ -67,6 +67,21 @@ main {
 	color: white;
 	padding: 0 1rem;
 	box-sizing: border-box;
+}
+
+.column {
+	display: flex;
+	width: 50%;
+	flex-direction: column;
+}
+
+.controls-wrapper {
+	display: flex;
+	width: 100%;
+	justify-content: center;
+	align-items: center;
+	height: 60px;
+	position: relative;
 }
 
 .track-info {
@@ -125,6 +140,37 @@ main {
 	align-items: center;
 }
 
+.progress-container {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.progress-time-elapsed,
+.progress-time-total {
+	font-size: 0.8rem;
+	color: white;
+	min-width: 40px;
+	text-align: center;
+}
+
+.progress-bar {
+	flex-grow: 1;
+	height: 4px;
+	background-color: rgba(255, 255, 255, 0.3);
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.progress-bar-fill {
+	width: 0;
+	height: 100%;
+	background-color: white;
+	transition: width 1s linear;
+}
+
 .spacer {
 	flex: 1;
 	margin-left: 12px
@@ -138,7 +184,7 @@ main {
 	padding: 0.5rem 1rem;
 	background-color: #3498db;
 	color: white;
-	border: none;
+	border: none; 
 	border-radius: 4px;
 	cursor: pointer;
 	font-size: 0.9rem;

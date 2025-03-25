@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"mango/backend/catalog"
 	"mango/backend/utils"
+	"math"
+	"strconv"
 	"sync"
 	"time"
 
@@ -65,7 +67,7 @@ func (pl *Playlist) handlePlayback(ctx context.Context, streamer beep.StreamSeek
 		case <-time.After(time.Second):
 			updateCurrentPosition(ctx, streamer, format, pl)
 		case request := <-ctrl:
-			handlePlaylistControl(request, pl, ctx)
+			handlePlaylistControl(request, pl, ctx, streamer, format, ctrl)
 		}
 	}
 }
@@ -73,18 +75,24 @@ func (pl *Playlist) handlePlayback(ctx context.Context, streamer beep.StreamSeek
 func setupControlEvents(ctx context.Context, pl *Playlist, ctrl chan string) {
 	runtime.EventsOn(ctx, "ctrl:request", func(optionalData ...interface{}) {
 		if len(optionalData) > 1 {
-			handleCtrlRequest(optionalData, pl, ctrl)
+			handleCtrlRequest(ctx, optionalData, pl, ctrl)
 		}
 	})
 }
 
-func handleCtrlRequest(optionalData []interface{}, pl *Playlist, ctrl chan string) {
+func handleCtrlRequest(ctx context.Context, optionalData []interface{}, pl *Playlist, ctrl chan string) {
 	request, ok := optionalData[0].(string)
 	playlist, validPlaylist := optionalData[1].(string)
-
-	if ok && validPlaylist && utils.IsValidCtrlRequest(request) && playlist == pl.ID {
+	if ok && validPlaylist && utils.IsValidCtrlRequest(request) {
 		ctrl <- request
 		ctrl <- playlist
+	}
+	var position string
+	if len(optionalData) > 2 {
+		position, ok = optionalData[2].(string)
+		if ok {
+			ctrl <- position
+		}
 	}
 }
 
@@ -99,7 +107,11 @@ func updateCurrentPosition(ctx context.Context, streamer beep.StreamSeekCloser, 
 	runtime.EventsEmit(ctx, "second:passed", format.SampleRate.D(streamer.Position()).Round(time.Second), pl.ID)
 }
 
-func handlePlaylistControl(request string, pl *Playlist, ctx context.Context) {
+func handlePlaylistControl(request string, pl *Playlist, ctx context.Context, s beep.StreamSeekCloser, f beep.Format, ctrl chan string) {
+	playlist := <-ctrl
+	if playlist != pl.ID {
+		return
+	}
 	switch request {
 	case "pause":
 		playlists[pl.ID].Player.Pause()
@@ -109,6 +121,37 @@ func handlePlaylistControl(request string, pl *Playlist, ctx context.Context) {
 		playlists[pl.ID].NextTrack(ctx)
 	case "previous":
 		playlists[pl.ID].PreviousTrack(ctx)
+	case "changePosition":
+		position := <-ctrl
+		positionFloat, err := strconv.ParseFloat(position, 64)
+		if err != nil {
+			return
+		}
+		positionFloat = math.Max(0, math.Min(1, positionFloat))
+		currentTrack := pl.Tracks[pl.Current]
+		totalSamples := f.SampleRate.N(currentTrack.Length)
+		samplePosition := int(float64(totalSamples) * positionFloat)
+		speaker.Lock()
+		err = s.Seek(samplePosition)
+		speaker.Unlock()
+		if err != nil {
+			speaker.Lock()
+			runtime.LogInfo(ctx, fmt.Sprintf("Seek failed: %v", err.Error()))
+			for offset := 0; offset < 1000; offset++ {
+				if seekErr := s.Seek(samplePosition + offset); seekErr == nil {
+					speaker.Unlock()
+					break
+				}
+				if seekErr := s.Seek(samplePosition - offset); seekErr == nil {
+					speaker.Unlock()
+					break
+				}
+			}
+			speaker.Unlock()
+		}
+		updateCurrentPosition(ctx, s, f, pl)
+	default:
+		runtime.LogInfo(ctx, "Unknown request")
 	}
 }
 

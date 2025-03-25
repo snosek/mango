@@ -45,8 +45,8 @@ func isAudioFile(fileName string) bool {
 	return ext == ".flac" || ext == ".mp3" || ext == ".wav" || ext == ".ogg"
 }
 
-func IsValidCtrlRequest(request string) bool {
-	return request == "pause" || request == "resume" || request == "next" || request == "previous"
+func IsValidCtrlRequest(r string) bool {
+	return r == "pause" || r == "resume" || r == "next" || r == "previous" || r == "changePosition"
 }
 
 func FirstOrEmpty(s []string) string {
