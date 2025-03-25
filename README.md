@@ -9,7 +9,7 @@ Mango is a modern, cross-platform music player built with Go and Wails.
 - Album and track details
 - Playback controls
 - Keyboard shortcuts for controlling playback
-- Support for FLAC audio files
+- Support for FLAC, MP3, WAV and Ogg Vorbis audio files
 
 ## Music Directory Structure
 
@@ -34,7 +34,7 @@ Music/
 
 **Important notes:**
 - Each album should be in its own directory
-- Album directories should contain FLAC files only (MP3, WAV, and OGG support is planned but not implemented yet)
+- Album directories should contain FLAC, MP3, WAV or Ogg Vorbis files
 - Include a `folder.jpg` file in each album directory for cover art
 
 ## Keyboard Shortcuts
