@@ -219,10 +219,12 @@ function handleTrackClick(event: MouseEvent): void {
 	if (!trackItem || !trackItem.dataset.index) 
 		return;
 	const trackNumber = trackItem.dataset.index
-	let albumID = ""
-	if (state.currentAlbum)
-		albumID = state.currentAlbum.ID
-	EventsEmit("playTrack", albumID, trackNumber)
+	if (!state.currentAlbum)
+		return
+	changePauseResumeButtonState("pause")
+	state.isPlaying = true;
+	const currentAlbumID = state.currentAlbum.ID
+	EventsEmit("track:switch", state.currentPlaylistID, currentAlbumID, trackNumber)
 }
 
 function navigateToAlbums(): void {
