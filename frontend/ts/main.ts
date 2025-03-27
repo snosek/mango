@@ -42,7 +42,7 @@ async function init(): Promise<void> {
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
-	document.getElementById('progress-bar')?.addEventListener('click', handleProgressBarClick);
+	document.getElementById('progress-container')?.addEventListener('click', handleProgressBarClick);
 
 	EventsOn("track:playing", (track, playlistPosition) => {
 		state.currentTrack = track;
