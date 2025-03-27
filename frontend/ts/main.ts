@@ -117,8 +117,11 @@ async function updateNowPlayingUI(): Promise<void> {
         </div>
     `;
 
+	if (!state.currentAlbum)
+		return;
+
 	if (state.currentView === "album-detail") {
-		updateTrackList(state.currentAlbum as catalog.Album);
+		updateTrackList(state.currentAlbum);
 	}
 }
 
@@ -212,9 +215,14 @@ function changePauseResumeButtonState(to: "pause" | "resume"): void {
 
 function handleTrackClick(event: MouseEvent): void {
 	const target = event.target as HTMLElement;
-	const trackItem = target.closest('.track-item');
-	if (!trackItem) 
+	const trackItem = target.closest('.track-item') as HTMLDivElement;
+	if (!trackItem || !trackItem.dataset.index) 
 		return;
+	const trackNumber = trackItem.dataset.index
+	let albumID = ""
+	if (state.currentAlbum)
+		albumID = state.currentAlbum.ID
+	EventsEmit("playTrack", albumID, trackNumber)
 }
 
 function navigateToAlbums(): void {

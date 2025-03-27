@@ -57,9 +57,11 @@ func (pl *Playlist) PlayCurrent(ctx context.Context) error {
 }
 
 func (pl *Playlist) handlePlayback(ctx context.Context, streamer beep.StreamSeekCloser, format beep.Format, done chan bool) error {
+	notifyTrackStart(ctx, pl)
 	ctrl := make(chan string)
 	setupControlEvents(ctx, pl, ctrl)
-	notifyTrackStart(ctx, pl)
+	trackSwitch := make(chan string)
+	setupTrackEvents(ctx, pl, trackSwitch)
 	for {
 		select {
 		case <-done:
@@ -67,32 +69,50 @@ func (pl *Playlist) handlePlayback(ctx context.Context, streamer beep.StreamSeek
 		case <-time.After(time.Second):
 			updateCurrentPosition(ctx, streamer, format, pl)
 		case request := <-ctrl:
-			handlePlaylistControl(request, pl, ctx, streamer, format, ctrl)
+			handlePlaylistControl(ctx, request, pl, streamer, format, ctrl)
+		case currentAlbum := <-trackSwitch:
+			handleTrackSwitch(ctx, currentAlbum, pl, trackSwitch)
 		}
 	}
 }
 
 func setupControlEvents(ctx context.Context, pl *Playlist, ctrl chan string) {
-	runtime.EventsOn(ctx, "ctrl:request", func(optionalData ...interface{}) {
+	runtime.EventsOn(ctx, "ctrl:request", func(optionalData ...any) {
 		if len(optionalData) > 1 {
 			handleCtrlRequest(ctx, optionalData, pl, ctrl)
 		}
 	})
 }
 
-func handleCtrlRequest(ctx context.Context, optionalData []interface{}, pl *Playlist, ctrl chan string) {
-	request, ok := optionalData[0].(string)
+func setupTrackEvents(ctx context.Context, pl *Playlist, trackSwitch chan string) {
+	runtime.EventsOn(ctx, "playTrack", func(optionalData ...any) {
+		if len(optionalData) > 1 {
+			handleTrackSwitchRequest(ctx, optionalData, pl, trackSwitch)
+		}
+	})
+}
+
+func handleCtrlRequest(ctx context.Context, optionalData []any, pl *Playlist, ctrl chan string) {
+	request, validRequest := optionalData[0].(string)
 	playlist, validPlaylist := optionalData[1].(string)
-	if ok && validPlaylist && utils.IsValidCtrlRequest(request) {
+	if validRequest && validPlaylist && utils.IsValidCtrlRequest(request) {
 		ctrl <- request
 		ctrl <- playlist
 	}
-	var position string
 	if len(optionalData) > 2 {
-		position, ok = optionalData[2].(string)
+		data, ok := optionalData[2].(string)
 		if ok {
-			ctrl <- position
+			ctrl <- data
 		}
+	}
+}
+
+func handleTrackSwitchRequest(ctx context.Context, optionalData []any, pl *Playlist, trackSwitch chan string) {
+	currentAlbum, validAlbum := optionalData[0].(string)
+	trackNumber, validTrackNumber := optionalData[1].(string)
+	if validAlbum && validTrackNumber {
+		trackSwitch <- currentAlbum
+		trackSwitch <- trackNumber
 	}
 }
 
@@ -107,7 +127,7 @@ func updateCurrentPosition(ctx context.Context, streamer beep.StreamSeekCloser, 
 	runtime.EventsEmit(ctx, "second:passed", format.SampleRate.D(streamer.Position()).Round(time.Second), pl.ID)
 }
 
-func handlePlaylistControl(request string, pl *Playlist, ctx context.Context, s beep.StreamSeekCloser, f beep.Format, ctrl chan string) {
+func handlePlaylistControl(ctx context.Context, request string, pl *Playlist, s beep.StreamSeekCloser, f beep.Format, ctrl chan string) {
 	playlist := <-ctrl
 	if playlist != pl.ID {
 		return
@@ -137,6 +157,25 @@ func handlePlaylistControl(request string, pl *Playlist, ctx context.Context, s 
 		updateCurrentPosition(ctx, s, f, pl)
 	default:
 		runtime.LogInfo(ctx, "Unknown request")
+	}
+}
+
+func handleTrackSwitch(ctx context.Context, currentAlbumID string, pl *Playlist, trackSwitch chan string) {
+	trackNumber, err := strconv.Atoi(<-trackSwitch)
+	if err != nil {
+		return
+	}
+	// chyba trzeba oddzielny event na pusty album id
+	if currentAlbumID == "" {
+		return
+	}
+	if currentAlbumID == pl.Tracks[0].AlbumID {
+		pl.Current = trackNumber
+		pl.PlayCurrent(ctx)
+	}
+	if currentAlbumID != pl.Tracks[0].AlbumID {
+		// tutaj tworzenie nowej playlisty i odtwarzanie jej. potrzebna lista trackow
+		// wiec chyba najpierw trzeba zrobic storage
 	}
 }
 

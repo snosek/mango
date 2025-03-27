@@ -46,7 +46,7 @@ func isAudioFile(fileName string) bool {
 }
 
 func IsValidCtrlRequest(r string) bool {
-	return r == "pause" || r == "resume" || r == "next" || r == "previous" || r == "changePosition"
+	return r == "pause" || r == "resume" || r == "next" || r == "previous" || r == "changePosition" || r == "playTrack"
 }
 
 func FirstOrEmpty(s []string) string {
