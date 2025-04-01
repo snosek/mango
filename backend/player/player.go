@@ -44,8 +44,6 @@ func newPlayer(st beep.Streamer, sr beep.SampleRate, done chan bool) *Player {
 }
 
 func (p *Player) play() {
-	speaker.Lock()
-	defer speaker.Unlock()
 	speaker.Play(p.volume)
 }
 
