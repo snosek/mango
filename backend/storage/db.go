@@ -39,6 +39,10 @@ func NewDB() (*DB, error) {
 
 func initSchema(db *sql.DB) error {
 	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS config (
+			musicDirPath TEXT
+		);
+
 		CREATE TABLE IF NOT EXISTS albums (
 			id TEXT PRIMARY KEY,
 			title TEXT,
@@ -73,9 +77,6 @@ func (db *DB) Close() error {
 
 func (db *DB) SaveCatalog(catalog *catalog.Catalog) error {
 	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
 	defer tx.Rollback()
 	if err != nil {
 		return err

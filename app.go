@@ -4,6 +4,7 @@ import (
 	"context"
 	"mango/backend/catalog"
 	"mango/backend/player"
+	"mango/backend/storage"
 	"mango/backend/utils"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -11,6 +12,8 @@ import (
 
 type App struct {
 	ctx context.Context
+	cat catalog.Catalog
+	DB  *storage.DB
 }
 
 func NewApp() *App {
@@ -21,6 +24,16 @@ func (a *App) startup(ctx context.Context) {
 	player.InitSpeaker()
 	a.ctx = ctx
 	runtime.LogSetLogLevel(ctx, 3)
+	var err error
+	a.DB, err = storage.NewDB()
+	if err != nil {
+		return
+	}
+}
+
+func (a *App) shutdown(ctx context.Context) {
+	a.DB.SaveCatalog(&a.cat)
+	a.DB.Close()
 }
 
 func (a *App) GetDirPath() (string, error) {
@@ -49,6 +62,7 @@ func (a *App) GetCatalog(fp string) catalog.Catalog {
 	if err != nil {
 		return catalog.Catalog{}
 	}
+	a.cat = cat
 	return cat
 }
 
@@ -57,6 +71,7 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 }
 
 func (a *App) Play(playlistID string) {
+	a.DB.SaveCatalog(&a.cat)
 	pl, exists := player.GetPlaylist(playlistID)
 	if !exists {
 		return

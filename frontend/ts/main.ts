@@ -3,7 +3,6 @@ import {
 	GetDirPath, 
 	NewPlaylist, 
 	Play, 
-
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
