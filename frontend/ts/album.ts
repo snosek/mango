@@ -59,7 +59,7 @@ export function updateTrackList(album: catalog.Album): void {
 			num.className = 'track-item__number';
 			num.innerHTML = `${i+1}`;
 		}
-		const currentTrack = document.getElementById(`song-${state.currentPlaylistPosistion}`) as HTMLDivElement
+		const currentTrack = document.getElementById(`song-${state.currentPlaylistPosition}`) as HTMLDivElement
 		currentTrack.className += ' currently-playing'
 		const num = currentTrack.querySelector('span') as HTMLSpanElement
 		num.className += ' currently-playing'

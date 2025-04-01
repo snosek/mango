@@ -37,7 +37,12 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 func (a *App) GetDirPath() (string, error) {
-	return utils.GetDirPath(a.ctx)
+	dirPath, err := utils.GetDirPath(a.ctx)
+	if err != nil {
+		return "", err
+	}
+	a.DB.Exec(`INSERT OR REPLACE INTO config (musicDirPath) VALUES (?)`, dirPath)
+	return dirPath, nil
 }
 
 func (a *App) GetAlbums(fp string) ([]string, error) {
@@ -64,6 +69,14 @@ func (a *App) GetCatalog(fp string) catalog.Catalog {
 	}
 	a.cat = cat
 	return cat
+}
+
+func (a *App) LoadCatalogFromDB() catalog.Catalog {
+	cat, err := a.DB.LoadCatalog()
+	if err != nil {
+		return catalog.Catalog{}
+	}
+	return *cat
 }
 
 func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {

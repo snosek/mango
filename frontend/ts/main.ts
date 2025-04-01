@@ -3,6 +3,7 @@ import {
 	GetDirPath, 
 	NewPlaylist, 
 	Play, 
+	LoadCatalogFromDB,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -13,7 +14,7 @@ interface AppState {
 	currentView: 'albums' | 'album-detail';
 	currentAlbum: catalog.Album | null;
 	currentPlaylistID: string | null;
-	currentPlaylistPosistion: number | null;
+	currentPlaylistPosition: number | null;
 	catalog: catalog.Catalog | null;
 	currentTrack: catalog.Track | null;
 	timeElapsed: number | null;
@@ -24,7 +25,7 @@ export let state: AppState = {
 	currentView: 'albums',
 	currentAlbum: null,
 	currentPlaylistID: null,
-	currentPlaylistPosistion: null,
+	currentPlaylistPosition: null,
 	catalog: null,
 	currentTrack: null,
 	timeElapsed: null,
@@ -40,12 +41,11 @@ async function init(): Promise<void> {
 	document.getElementById('pause_resume-button')?.addEventListener('click', handlePauseResumeClick)
 	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('next_track-button')?.addEventListener('click', handleNextTrackClick);
-	document.getElementById('previous_track-button')?.addEventListener('click', handlePreviousTrackClick);
 	document.getElementById('progress-container')?.addEventListener('click', handleProgressBarClick);
 
 	EventsOn("track:playing", (track, playlistPosition) => {
 		state.currentTrack = track;
-		state.currentPlaylistPosistion = playlistPosition;
+		state.currentPlaylistPosition = playlistPosition;
 		updateNowPlayingUI();
 	})
 
@@ -55,7 +55,14 @@ async function init(): Promise<void> {
 		updateTimeControlUI();
 	})
 
-	loadAlbums("");
+	let catalog = await LoadCatalogFromDB();
+	if (catalog) {
+		state.catalog = catalog;
+		const albumsContainer = document.getElementById('albums-container');
+		renderAlbumsList(state.catalog?.Albums, albumsContainer!)
+	} else {
+		loadAlbums("");
+	}
 }
 
 async function handleProgressBarClick(event: MouseEvent): Promise<void> {
