@@ -7,6 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/KononK/resize v0.0.0-20200801203131-21c514740ed6
 	github.com/gopxl/beep/v2 v2.1.1
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/wailsapp/wails/v2 v2.10.0
 	go.senan.xyz/taglib v0.6.1
 )
