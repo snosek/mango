@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"fmt"
 	"mango/backend/utils"
 	"strconv"
 	"time"
@@ -19,14 +20,14 @@ type Track struct {
 	Filepath    string
 }
 
-func NewTrack(fp string) Track {
+func NewTrack(fp string, optionalTrackNum int) Track {
 	t := Track{Filepath: fp}
-	t.populateMetadata()
-	t.ID = utils.HashTitle(t.Title)
+	t.populateMetadata(optionalTrackNum)
+	t.ID = utils.HashTitle(t.Title + fmt.Sprintf("%v", t.TrackNumber))
 	return t
 }
 
-func (t *Track) populateMetadata() {
+func (t *Track) populateMetadata(optionalTrackNum int) {
 	tags, err := taglib.ReadTags(t.Filepath)
 	if err != nil {
 		return
@@ -34,7 +35,7 @@ func (t *Track) populateMetadata() {
 
 	t.Title = utils.FirstOrEmpty(tags[taglib.Title])
 	t.Artist = tags[taglib.Artist]
-	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber])
+	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber], optionalTrackNum)
 
 	props, err := taglib.ReadProperties(t.Filepath)
 	if err == nil {
@@ -43,13 +44,13 @@ func (t *Track) populateMetadata() {
 	}
 }
 
-func parseTrackNumber(nums []string) uint {
+func parseTrackNumber(nums []string, optionalTrackNum int) uint {
 	if len(nums) == 0 {
-		return 0
+		return uint(optionalTrackNum)
 	}
 	num, err := strconv.Atoi(nums[0])
 	if err != nil {
-		return 0
+		return uint(optionalTrackNum)
 	}
 	return uint(num)
 }

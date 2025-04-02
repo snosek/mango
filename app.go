@@ -49,11 +49,6 @@ func (a *App) GetAlbums(fp string) ([]string, error) {
 	return utils.FetchDirectories(fp)
 }
 
-func (a *App) GetTrack(fp string) catalog.Track {
-	t := catalog.NewTrack(fp)
-	return t
-}
-
 func (a *App) GetAlbum(fp string) catalog.Album {
 	album, err := catalog.NewAlbum(fp)
 	if err != nil {

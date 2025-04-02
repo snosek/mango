@@ -89,8 +89,8 @@ func (a Album) FetchTracks() ([]*Track, error) {
 		return nil, err
 	}
 	tracks := []*Track{}
-	for _, fp := range trackPaths {
-		t := NewTrack(fp)
+	for optionalTrackNum, fp := range trackPaths {
+		t := NewTrack(fp, optionalTrackNum)
 		tracks = append(tracks, &t)
 	}
 	return tracks, nil
