@@ -3,8 +3,10 @@ import {
 	GetDirPath, 
 	NewPlaylist, 
 	Play, 
+	GetMusicDirPath,
 	LoadCatalogFromDB,
 	SaveCatalog,
+	SyncDB,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -56,10 +58,14 @@ async function init(): Promise<void> {
 		updateTimeControlUI();
 	})
 
-	let catalog = await LoadCatalogFromDB();
-	if (catalog) {
-		state.catalog = catalog;
+	let musicDirPath = await GetMusicDirPath();
+	if (musicDirPath) {
+		let catalog = await LoadCatalogFromDB()
 		const albumsContainer = document.getElementById('albums-container');
+		renderAlbumsList(catalog.Albums, albumsContainer!)
+		await SyncDB()
+		catalog = await LoadCatalogFromDB()
+		state.catalog = catalog;	
 		renderAlbumsList(state.catalog?.Albums, albumsContainer!)
 	} else {
 		loadAlbums("");
