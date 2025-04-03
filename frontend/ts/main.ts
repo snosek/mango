@@ -7,6 +7,7 @@ import {
 	LoadCatalogFromDB,
 	SaveCatalog,
 	SyncDB,
+	NewDB,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -57,6 +58,8 @@ async function init(): Promise<void> {
 			state.timeElapsed = timeElapsed;
 		updateTimeControlUI();
 	})
+
+	await NewDB();
 
 	let musicDirPath = await GetMusicDirPath();
 	if (musicDirPath) {

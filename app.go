@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"mango/backend/catalog"
 	"mango/backend/player"
 	"mango/backend/storage"
@@ -26,11 +24,15 @@ func (a *App) startup(ctx context.Context) {
 	player.InitSpeaker()
 	a.ctx = ctx
 	runtime.LogSetLogLevel(ctx, 3)
-	var err error
-	a.DB, err = storage.NewDB()
+}
+
+func (a *App) NewDB() error {
+	db, err := storage.NewDB()
 	if err != nil {
-		return
+		return err
 	}
+	a.DB = db
+	return nil
 }
 
 func (a *App) SyncDB() {
@@ -137,13 +139,9 @@ func (a *App) SaveCatalog(cat *catalog.Catalog) {
 
 func (a *App) GetMusicDirPath() string {
 	var musicDirPath string
-	rows, err := a.DB.Query(`SELECT musicDirPath FROM config`)
+	err := a.DB.QueryRow(`SELECT musicDirPath FROM config`).Scan(&musicDirPath)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return ""
-		}
+		return ""
 	}
-	rows.Next()
-	rows.Scan(&musicDirPath)
 	return musicDirPath
 }
