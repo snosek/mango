@@ -78,7 +78,6 @@ func (a *App) NewPlaylist(tracks []*catalog.Track) *player.Playlist {
 }
 
 func (a *App) Play(playlistID string) {
-	a.DB.SaveCatalog(&a.cat)
 	pl, exists := player.GetPlaylist(playlistID)
 	if !exists {
 		return

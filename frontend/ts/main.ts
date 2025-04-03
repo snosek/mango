@@ -152,7 +152,7 @@ async function handleSelectDirectory(): Promise<void> {
 		if (dirPath)
 			await loadAlbums(dirPath);
 		if (state.catalog)
-			SaveCatalog(state.catalog);
+			await SaveCatalog(state.catalog);
 	} catch (error) {
 		console.error('Error selecting directory:', error);
 		alert(`Failed to select directory: ${error}`);

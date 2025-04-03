@@ -90,6 +90,7 @@ func (db *DB) SaveCatalog(catalog *catalog.Catalog) error {
 }
 
 func (db *DB) saveAlbum(tx *sql.Tx, album *catalog.Album) error {
+	fmt.Println("saving album " + album.Title)
 	artistJSON, err := json.Marshal(album.Artist)
 	if err != nil {
 		return fmt.Errorf("failed to marshal artist: %w", err)

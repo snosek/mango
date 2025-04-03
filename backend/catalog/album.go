@@ -34,7 +34,9 @@ func NewAlbum(fp string) (Album, error) {
 	}
 	album.Tracks = SortTracks(tracks)
 	album.populateMetadata()
-	album.ID = strings.ToLower(album.Title) + utils.HashTitle(album.Title)
+	filenames := album.getAllFilenames()
+	albumModTime := album.getModificationTime()
+	album.ID = strings.ToLower(album.Title) + utils.Hash(filenames+albumModTime)
 	for _, t := range album.Tracks {
 		t.AlbumID = album.ID
 	}
@@ -101,4 +103,58 @@ func SortTracks(tracks []*Track) []*Track {
 		return tracks[i].TrackNumber < tracks[j].TrackNumber
 	})
 	return tracks
+}
+
+var systemFilePatterns = []string{
+	".DS_Store",
+	"._*",
+	".Trash*",
+	".fseventsd",
+	".Spotlight-V100",
+	".TemporaryItems",
+	".apdisk",
+	"Thumbs.db",
+	"desktop.ini",
+	"$RECYCLE.BIN",
+	".Trash-1000",
+	".nfs*",
+}
+
+func isIgnored(file string) bool {
+	for _, pattern := range systemFilePatterns {
+		matched, _ := filepath.Match(pattern, file)
+		if matched {
+			return true
+		}
+	}
+	return false
+}
+
+func (a Album) getAllFilenames() string {
+	entries, err := os.ReadDir(a.Filepath)
+	if err != nil {
+		return ""
+	}
+	var filenames string
+	for _, entry := range entries {
+		if isIgnored(entry.Name()) {
+			continue
+		}
+		filenames += entry.Name()
+	}
+	return filenames
+}
+
+func (a Album) getModificationTime() string {
+	albumDir, err := os.Open(a.Filepath)
+	defer albumDir.Close()
+	if err != nil {
+		return ""
+	}
+	albumDirStat, err := albumDir.Stat()
+	if err != nil {
+		return ""
+	}
+	albumModTime := albumDirStat.ModTime()
+	return albumModTime.String()
 }

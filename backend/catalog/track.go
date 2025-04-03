@@ -3,7 +3,9 @@ package catalog
 import (
 	"fmt"
 	"mango/backend/utils"
+	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.senan.xyz/taglib"
@@ -23,7 +25,7 @@ type Track struct {
 func NewTrack(fp string, optionalTrackNum int) Track {
 	t := Track{Filepath: fp}
 	t.populateMetadata(optionalTrackNum)
-	t.ID = utils.HashTitle(t.Title + fmt.Sprintf("%v", t.TrackNumber))
+	t.ID = utils.Hash(t.Title + fmt.Sprintf("%v", t.TrackNumber))
 	return t
 }
 
@@ -33,7 +35,7 @@ func (t *Track) populateMetadata(optionalTrackNum int) {
 		return
 	}
 
-	t.Title = utils.FirstOrEmpty(tags[taglib.Title])
+	t.Title = utils.FirstOrFallback(tags[taglib.Title], []string{strings.TrimSuffix(path.Base(t.Filepath), path.Ext(t.Filepath))})[0]
 	t.Artist = tags[taglib.Artist]
 	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber], optionalTrackNum)
 
