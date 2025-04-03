@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"fmt"
 	"mango/backend/catalog"
 
@@ -10,9 +9,7 @@ import (
 
 func SyncCatalog(db *DB, musicDirPath string) error {
 	if musicDirPath == "" {
-		err := errors.New("empty music directory path")
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("empty music directory path")
 	}
 	existingCatalog, err := db.LoadCatalog()
 	if err != nil {

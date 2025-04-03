@@ -60,15 +60,24 @@ async function init(): Promise<void> {
 
 	let musicDirPath = await GetMusicDirPath();
 	if (musicDirPath) {
-		let catalog = await LoadCatalogFromDB()
+		let catalog = await LoadCatalogFromDB();
+		state.catalog = catalog;
 		const albumsContainer = document.getElementById('albums-container');
-		renderAlbumsList(catalog.Albums, albumsContainer!)
-		await SyncDB()
-		catalog = await LoadCatalogFromDB()
-		state.catalog = catalog;	
-		renderAlbumsList(state.catalog?.Albums, albumsContainer!)
+		renderAlbumsList(state.catalog?.Albums, albumsContainer!);
+		backgroundSync();
 	} else {
 		loadAlbums("");
+	}
+
+}
+
+async function backgroundSync(): Promise<void> {
+	await SyncDB();
+	const updatedCatalog = await LoadCatalogFromDB();
+	if (JSON.stringify(state.catalog) !== JSON.stringify(updatedCatalog)) {
+		state.catalog = updatedCatalog;
+		const albumsContainer = document.getElementById('albums-container');
+		renderAlbumsList(state.catalog?.Albums, albumsContainer!);
 	}
 }
 
