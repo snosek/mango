@@ -61,7 +61,7 @@ func (a *App) GetAlbum(fp string) catalog.Album {
 	if err != nil {
 		return catalog.Album{}
 	}
-	return album
+	return *album
 }
 
 func (a *App) GetCatalog(fp string) catalog.Catalog {

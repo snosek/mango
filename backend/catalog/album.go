@@ -24,23 +24,23 @@ type Album struct {
 	Tracks   []*Track
 	Cover    string
 	Filepath string
+	ModTime  string
 }
 
-func NewAlbum(fp string) (Album, error) {
+func NewAlbum(fp string) (*Album, error) {
 	album := Album{Filepath: fp}
 	tracks, err := album.FetchTracks()
 	if err != nil {
-		return album, err
+		return &album, err
 	}
 	album.Tracks = SortTracks(tracks)
 	album.populateMetadata()
-	filenames := album.getAllFilenames()
-	albumModTime := album.getModificationTime()
-	album.ID = strings.ToLower(album.Title) + utils.Hash(filenames+albumModTime)
+	album.ModTime = utils.GetModificationTime(album.Filepath)
+	album.ID = strings.ToLower(album.Filepath) + album.ModTime
 	for _, t := range album.Tracks {
 		t.AlbumID = album.ID
 	}
-	return album, nil
+	return &album, nil
 }
 
 func (a *Album) populateMetadata() {
@@ -143,18 +143,4 @@ func (a Album) getAllFilenames() string {
 		filenames += entry.Name()
 	}
 	return filenames
-}
-
-func (a Album) getModificationTime() string {
-	albumDir, err := os.Open(a.Filepath)
-	defer albumDir.Close()
-	if err != nil {
-		return ""
-	}
-	albumDirStat, err := albumDir.Stat()
-	if err != nil {
-		return ""
-	}
-	albumModTime := albumDirStat.ModTime()
-	return albumModTime.String()
 }

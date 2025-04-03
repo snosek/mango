@@ -25,7 +25,7 @@ func NewCatalog(fp string) (Catalog, error) {
 		if err != nil {
 			continue
 		}
-		catalog.Albums[album.ID] = &album
+		catalog.Albums[album.ID] = album
 	}
 	return catalog, nil
 }

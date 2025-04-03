@@ -86,3 +86,17 @@ func fnv64a(s string) []byte {
 	b[7] = byte(hash)
 	return b
 }
+
+func GetModificationTime(fp string) string {
+	albumDir, err := os.Open(fp)
+	if err != nil {
+		return ""
+	}
+	defer albumDir.Close()
+	albumDirStat, err := albumDir.Stat()
+	if err != nil {
+		return ""
+	}
+	albumModTime := albumDirStat.ModTime()
+	return albumModTime.String()
+}
