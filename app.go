@@ -32,8 +32,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) shutdown(ctx context.Context) {
-	a.DB.SaveCatalog(&a.cat)
-	a.DB.Close()
+	go a.DB.Close()
 }
 
 func (a *App) GetDirPath() (string, error) {
@@ -123,4 +122,8 @@ func (a *App) GetCurrentTrack(playlistID string) *catalog.Track {
 		return pl.Tracks[pl.Current]
 	}
 	return nil
+}
+
+func (a *App) SaveCatalog(cat *catalog.Catalog) {
+	a.DB.SaveCatalog(cat)
 }

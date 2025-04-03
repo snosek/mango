@@ -4,6 +4,7 @@ import {
 	NewPlaylist, 
 	Play, 
 	LoadCatalogFromDB,
+	SaveCatalog,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -150,6 +151,8 @@ async function handleSelectDirectory(): Promise<void> {
 		const dirPath = await GetDirPath();
 		if (dirPath)
 			await loadAlbums(dirPath);
+		if (state.catalog)
+			SaveCatalog(state.catalog);
 	} catch (error) {
 		console.error('Error selecting directory:', error);
 		alert(`Failed to select directory: ${error}`);
