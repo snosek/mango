@@ -143,5 +143,5 @@ func (a *App) GetMusicDirPath() string {
 	if err != nil {
 		return ""
 	}
-	return musicDirPath
+	return utils.GetMusicDirPath(a.DB.DB)
 }

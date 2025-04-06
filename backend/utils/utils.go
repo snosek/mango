@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"path/filepath"
 
@@ -99,4 +100,13 @@ func GetModificationTime(fp string) string {
 	}
 	albumModTime := albumDirStat.ModTime()
 	return albumModTime.String()
+}
+
+func GetMusicDirPath(db *sql.DB) string {
+	var musicDirPath string
+	err := db.QueryRow(`SELECT musicDirPath FROM config;`).Scan(&musicDirPath)
+	if err != nil {
+		return ""
+	}
+	return musicDirPath
 }
