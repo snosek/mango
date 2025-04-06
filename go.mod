@@ -6,6 +6,7 @@ toolchain go1.24.0
 
 require (
 	github.com/KononK/resize v0.0.0-20200801203131-21c514740ed6
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/wailsapp/wails/v2 v2.10.0
@@ -16,7 +17,6 @@ require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/ebitengine/oto/v3 v3.3.2 // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
