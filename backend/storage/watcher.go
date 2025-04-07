@@ -2,14 +2,22 @@ package storage
 
 import (
 	"context"
+	"log"
 	"mango/backend/utils"
+	"os"
 
 	"github.com/fsnotify/fsnotify"
 )
 
+type AlbumEvent struct {
+	Path string
+	Type string
+}
+
 type Watcher struct {
 	*fsnotify.Watcher
-	db *DB
+	AlbumEvents chan AlbumEvent
+	db          *DB
 }
 
 func NewWatcher(db *DB) (*Watcher, error) {
@@ -26,8 +34,33 @@ func NewWatcher(db *DB) (*Watcher, error) {
 }
 
 func (w *Watcher) Watch(ctx context.Context) {
+	w.AlbumEvents = make(chan AlbumEvent)
 	go func() {
-		SyncCatalogInRealTime(ctx, w, w.db)
+		defer close(w.AlbumEvents)
+		for {
+			select {
+			case event, ok := <-w.Events:
+				if !ok {
+					return
+				}
+				if utils.IsSystemFile(event.Name) {
+					continue
+				}
+				switch {
+				case event.Op&(fsnotify.Create|fsnotify.Write) != 0:
+					if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+						w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "add"}
+					}
+				case event.Op&fsnotify.Rename != 0:
+					w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "remove"}
+				}
+			case err, ok := <-w.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("Watcher error: %v", err)
+			}
+		}
 	}()
 }
 

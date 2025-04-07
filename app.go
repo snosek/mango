@@ -34,7 +34,7 @@ func (a *App) startup(ctx context.Context) {
 		return
 	}
 	a.FSWatcher = w
-	a.FSWatcher.Watch(a.ctx)
+	storage.SyncCatalogInRealTime(a.ctx, a.FSWatcher)
 }
 
 func (a *App) NewDB() error {
