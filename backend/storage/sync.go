@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
 	"mango/backend/catalog"
 	"mango/backend/utils"
 	"strings"
@@ -46,11 +45,9 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
-	for id := range toRemove {
+	for id, _ := range toRemove {
 		if err := db.RemoveAlbum(id); err != nil {
-			tx.Rollback()
-			log.Printf("Failed to remove album %s: %v", id, err)
-			continue
+			return fmt.Errorf("Failed to remove album %s: %v", id, err)
 		}
 	}
 	for _, fp := range toAdd {
@@ -83,9 +80,10 @@ func SyncCatalogInRealTime(ctx context.Context, w *Watcher) {
 					tx.Rollback()
 					continue
 				}
-				if err := tx.Commit(); err == nil {
-					runtime.EventsEmit(ctx, "album:addedOrRemoved")
+				if err := tx.Commit(); err != nil {
+					return
 				}
+				runtime.EventsEmit(ctx, "album:addedOrRemoved")
 			case "remove":
 				tx, err := w.db.Begin()
 				if err != nil {
@@ -95,9 +93,10 @@ func SyncCatalogInRealTime(ctx context.Context, w *Watcher) {
 					tx.Rollback()
 					continue
 				}
-				if err := tx.Commit(); err == nil {
-					runtime.EventsEmit(ctx, "album:addedOrRemoved")
+				if err := tx.Commit(); err != nil {
+					return
 				}
+				runtime.EventsEmit(ctx, "album:addedOrRemoved")
 			}
 		}
 	}()
