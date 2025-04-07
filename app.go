@@ -11,9 +11,10 @@ import (
 )
 
 type App struct {
-	ctx context.Context
-	cat catalog.Catalog
-	DB  *storage.DB
+	ctx       context.Context
+	cat       catalog.Catalog
+	DB        *storage.DB
+	FSWatcher *storage.Watcher
 }
 
 func NewApp() *App {
@@ -24,6 +25,16 @@ func (a *App) startup(ctx context.Context) {
 	player.InitSpeaker()
 	a.ctx = ctx
 	runtime.LogSetLogLevel(ctx, 3)
+	err := a.NewDB()
+	if err != nil {
+		return
+	}
+	w, err := storage.NewWatcher(a.DB)
+	if err != nil {
+		return
+	}
+	a.FSWatcher = w
+	a.FSWatcher.Watch(a.ctx)
 }
 
 func (a *App) NewDB() error {
@@ -43,6 +54,7 @@ func (a *App) SyncDB() {
 
 func (a *App) shutdown(ctx context.Context) {
 	go a.DB.Close()
+	go a.FSWatcher.Close()
 }
 
 func (a *App) GetDirPath() (string, error) {

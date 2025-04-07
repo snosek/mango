@@ -110,3 +110,29 @@ func GetMusicDirPath(db *sql.DB) string {
 	}
 	return musicDirPath
 }
+
+var systemFilePatterns = []string{
+	".DS_Store",
+	"._*",
+	".Trash*",
+	".fseventsd",
+	".Spotlight-V100",
+	".TemporaryItems",
+	".apdisk",
+	"Thumbs.db",
+	"desktop.ini",
+	"$RECYCLE.BIN",
+	".Trash-1000",
+	".nfs*",
+}
+
+func IsSystemFile(fp string) bool {
+	fileBase := filepath.Base(fp)
+	for _, pattern := range systemFilePatterns {
+		matched, _ := filepath.Match(pattern, fileBase)
+		if matched {
+			return true
+		}
+	}
+	return false
+}

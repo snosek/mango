@@ -7,7 +7,7 @@ import {
 	LoadCatalogFromDB,
 	SaveCatalog,
 	SyncDB,
-	NewDB,
+	// NewDB,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -59,7 +59,19 @@ async function init(): Promise<void> {
 		updateTimeControlUI();
 	})
 
-	await NewDB();
+	EventsOn("album:addedOrRemoved", () => {
+		setTimeout(() => {
+			LoadCatalogFromDB()
+				.then((catalog) => {
+					state.catalog = catalog;
+					const albumsContainer = document.getElementById('albums-container');
+					renderAlbumsList(state.catalog?.Albums, albumsContainer!);
+				})
+				.catch(err => {
+					console.error("Failed to load catalog:", err);
+				});
+		}, 50);
+	});
 
 	let musicDirPath = await GetMusicDirPath();
 	if (musicDirPath) {

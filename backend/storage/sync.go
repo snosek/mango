@@ -1,12 +1,17 @@
 package storage
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"mango/backend/catalog"
 	"mango/backend/utils"
+	"os"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func SyncCatalog(db *DB, musicDirPath string) error {
@@ -63,4 +68,65 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func SyncCatalogInRealTime(ctx context.Context, w *Watcher, db *DB) {
+	for {
+		select {
+		case event, ok := <-w.Events:
+			if !ok {
+				return
+			}
+			if utils.IsSystemFile(event.Name) {
+				continue
+			}
+			switch {
+			case event.Op&(fsnotify.Create|fsnotify.Write) != 0:
+				if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+					if album, err := catalog.NewAlbum(event.Name); err == nil {
+						if tx, err := db.Begin(); err == nil {
+							if err := db.saveAlbum(tx, album); err != nil {
+								tx.Rollback()
+								log.Printf("Failed to save album %s: %v", album.Title, err)
+								continue
+							}
+							if err := tx.Commit(); err == nil {
+								runtime.EventsEmit(ctx, "album:addedOrRemoved")
+								log.Printf("Album added: %s", album.Title)
+							} else {
+								log.Printf("Failed to commit transaction: %v", err)
+							}
+						} else {
+							log.Printf("Failed to begin transaction: %v", err)
+						}
+					} else {
+						log.Printf("Error creating album from %s: %v", event.Name, err)
+					}
+				} else if err != nil {
+					log.Printf("Error accessing file %s: %v", event.Name, err)
+				}
+			case event.Op&fsnotify.Rename != 0:
+				if tx, err := db.Begin(); err == nil {
+					if err := db.RemoveAlbumByPath(event.Name); err != nil {
+						tx.Rollback()
+						log.Printf("Failed to remove album at path %s: %v", event.Name, err)
+						continue
+					}
+					if err := tx.Commit(); err == nil {
+						runtime.EventsEmit(ctx, "album:addedOrRemoved")
+						log.Printf("Album removed: %s", event.Name)
+					} else {
+						log.Printf("Failed to commit transaction: %v", err)
+					}
+				} else {
+					log.Printf("Failed to begin transaction: %v", err)
+				}
+			}
+		case err, ok := <-w.Errors:
+			if !ok {
+				return
+			}
+			log.Printf("Watcher error: %v", err)
+		}
+	}
 }

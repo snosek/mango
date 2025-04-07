@@ -170,7 +170,6 @@ func handleTrackSwitch(ctx context.Context, playlistID string, pl *Playlist, tra
 	}
 	albumID := <-trackSwitch
 	trackNumber, err := strconv.Atoi(<-trackSwitch)
-	fmt.Println(playlistID + albumID + fmt.Sprintf("%v", trackNumber))
 	if err != nil {
 		return
 	}

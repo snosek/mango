@@ -1,22 +1,19 @@
 package storage
 
 import (
+	"context"
 	"mango/backend/utils"
 
 	"github.com/fsnotify/fsnotify"
 )
 
 type Watcher struct {
-	watcher  *fsnotify.Watcher
-	filepath string
+	*fsnotify.Watcher
+	db *DB
 }
 
-func NewWatcher() (*Watcher, error) {
+func NewWatcher(db *DB) (*Watcher, error) {
 	w, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	db, err := NewDB()
 	if err != nil {
 		return nil, err
 	}
@@ -25,12 +22,15 @@ func NewWatcher() (*Watcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Watcher{watcher: w, filepath: fp}, nil
+	return &Watcher{Watcher: w, db: db}, nil
 }
 
-func (w *Watcher) Watch() {
+func (w *Watcher) Watch(ctx context.Context) {
+	go func() {
+		SyncCatalogInRealTime(ctx, w, w.db)
+	}()
 }
 
 func (w *Watcher) Close() error {
-	return w.watcher.Close()
+	return w.Close()
 }

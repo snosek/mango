@@ -242,3 +242,32 @@ func (db *DB) loadTracksForAlbum(albumID string) ([]*catalog.Track, error) {
 	}
 	return tracks, nil
 }
+
+func (db *DB) RemoveAlbum(albumID string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+	_, err = tx.Exec("DELETE FROM tracks WHERE album_id = ?", albumID)
+	if err != nil {
+		return fmt.Errorf("failed to delete tracks for album: %w", err)
+	}
+	_, err = tx.Exec("DELETE FROM albums WHERE id = ?", albumID)
+	if err != nil {
+		return fmt.Errorf("failed to delete album: %w", err)
+	}
+	return tx.Commit()
+}
+
+func (db *DB) RemoveAlbumByPath(albumPath string) error {
+	var albumID string
+	err := db.QueryRow("SELECT id FROM albums WHERE filepath = ?", albumPath).Scan(&albumID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		return fmt.Errorf("failed to find album by path %s: %w", albumPath, err)
+	}
+	return db.RemoveAlbum(albumID)
+}
