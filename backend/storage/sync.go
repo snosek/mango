@@ -66,13 +66,13 @@ func SyncCatalogInRealTime(ctx context.Context, w *Watcher) {
 	w.Watch(ctx)
 	go func() {
 		for event := range w.AlbumEvents {
+			tx, err := w.db.Begin()
+			if err != nil {
+				continue
+			}
 			switch event.Type {
 			case "add":
 				album, err := catalog.NewAlbum(event.Path)
-				if err != nil {
-					continue
-				}
-				tx, err := w.db.Begin()
 				if err != nil {
 					continue
 				}
@@ -85,10 +85,6 @@ func SyncCatalogInRealTime(ctx context.Context, w *Watcher) {
 				}
 				runtime.EventsEmit(ctx, "album:addedOrRemoved")
 			case "remove":
-				tx, err := w.db.Begin()
-				if err != nil {
-					continue
-				}
 				if err := w.db.RemoveAlbumByPath(event.Path); err != nil {
 					tx.Rollback()
 					continue
