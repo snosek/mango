@@ -53,8 +53,8 @@ func (a *App) SyncDB() {
 }
 
 func (a *App) shutdown(ctx context.Context) {
-	go a.DB.Close()
-	go a.FSWatcher.Close()
+	a.DB.Close()
+	a.FSWatcher.Close()
 }
 
 func (a *App) GetDirPath() (string, error) {
@@ -150,10 +150,16 @@ func (a *App) SaveCatalog(cat *catalog.Catalog) {
 }
 
 func (a *App) GetMusicDirPath() string {
-	var musicDirPath string
-	err := a.DB.QueryRow(`SELECT musicDirPath FROM config`).Scan(&musicDirPath)
-	if err != nil {
+	if a.DB == nil {
 		return ""
 	}
 	return utils.GetMusicDirPath(a.DB.DB)
+}
+
+func (a *App) IsDBAvailable() bool {
+	for {
+		if a.DB != nil {
+			return true
+		}
+	}
 }

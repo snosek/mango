@@ -72,7 +72,7 @@ func initSchema(db *sql.DB) error {
 }
 
 func (db *DB) Close() error {
-	return db.Close()
+	return db.DB.Close()
 }
 
 func (db *DB) SaveCatalog(catalog *catalog.Catalog) error {

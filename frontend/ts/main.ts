@@ -7,7 +7,7 @@ import {
 	LoadCatalogFromDB,
 	SaveCatalog,
 	SyncDB,
-	// NewDB,
+	IsDBAvailable,
 } from '../wailsjs/go/main/App';
 import { renderAlbumsList, renderAlbumDetails, updateTrackList } from './album';
 import { catalog } from '../wailsjs/go/models';
@@ -73,6 +73,8 @@ async function init(): Promise<void> {
 		}, 50);
 	});
 
+	await IsDBAvailable()
+
 	let musicDirPath = await GetMusicDirPath();
 	if (musicDirPath) {
 		let catalog = await LoadCatalogFromDB();
@@ -83,7 +85,6 @@ async function init(): Promise<void> {
 	} else {
 		loadAlbums("");
 	}
-
 }
 
 async function backgroundSync(): Promise<void> {

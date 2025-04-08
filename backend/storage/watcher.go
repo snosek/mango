@@ -65,5 +65,5 @@ func (w *Watcher) Watch(ctx context.Context) {
 }
 
 func (w *Watcher) Close() error {
-	return w.Close()
+	return w.Watcher.Close()
 }
