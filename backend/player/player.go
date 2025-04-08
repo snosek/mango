@@ -29,9 +29,10 @@ type Player struct {
 	streamer beep.Streamer
 	ctrl     *beep.Ctrl
 	volume   *effects.Volume
+	closer   beep.StreamSeekCloser
 }
 
-func newPlayer(st beep.Streamer, sr beep.SampleRate, done chan bool) *Player {
+func newPlayer(st beep.StreamSeekCloser, sr beep.SampleRate, done chan bool) *Player {
 	resampled := resampleStreamer(st, sr, sampleRate)
 	streamer := beep.Seq(resampled, beep.Callback(func() { done <- true }))
 	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
@@ -40,11 +41,19 @@ func newPlayer(st beep.Streamer, sr beep.SampleRate, done chan bool) *Player {
 		streamer: streamer,
 		ctrl:     ctrl,
 		volume:   volume,
+		closer:   st,
 	}
 }
 
 func (p *Player) play() {
 	speaker.Play(p.volume)
+}
+
+func (p *Player) Close() {
+	if p.closer != nil {
+		p.closer.Close()
+		p.closer = nil
+	}
 }
 
 func (p *Player) Pause() {

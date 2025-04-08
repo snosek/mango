@@ -44,7 +44,7 @@ func GetPlaylist(id string) (*Playlist, bool) {
 }
 
 func (pl *Playlist) PlayCurrent(ctx context.Context) error {
-	stopOtherPlaylists()
+	cleanupOtherPlaylists()
 	track := pl.Tracks[pl.Current]
 	streamer, format, err := decodeTrack(track.Filepath)
 	if err != nil {
@@ -183,10 +183,12 @@ func handleTrackSwitch(ctx context.Context, playlistID string, pl *Playlist, tra
 	}
 }
 
-func stopOtherPlaylists() {
+func cleanupOtherPlaylists() {
 	for _, p := range playlists {
 		if p.Player != nil {
 			p.Player.Pause()
+			p.Player.Close()
+			p.Player = nil
 		}
 	}
 }
