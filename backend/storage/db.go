@@ -153,7 +153,7 @@ func (db *DB) LoadCatalog() (*catalog.Catalog, error) {
 	}
 	albums, err := db.loadAlbums()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load albums: %w", err)
 	}
 	for _, album := range albums {
 		tracks, err := db.loadTracksForAlbum(album.ID)

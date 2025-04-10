@@ -59,8 +59,14 @@ func (a *Album) populateMetadata() error {
 	a.Artist = files.FirstOrFallback(tags[taglib.AlbumArtist], tags[taglib.Artist])
 	a.Genre = tags[taglib.Genre]
 	a.Length = a.calculateLength()
-	a.Cover = a.encodeCover()
-	a.ModTime = files.GetModificationTime(a.Filepath)
+	a.Cover, err = a.encodeCover()
+	if err != nil {
+		return err
+	}
+	a.ModTime, err = files.GetModificationTime(a.Filepath)
+	if err != nil {
+		return fmt.Errorf("error getting modification time for %s: %w", a.Title, err)
+	}
 	a.ID = strings.ToLower(a.Filepath) + a.ModTime
 	for _, t := range a.Tracks {
 		t.AlbumID = a.ID
@@ -68,22 +74,25 @@ func (a *Album) populateMetadata() error {
 	return nil
 }
 
-func (a *Album) encodeCover() string {
+func (a *Album) encodeCover() (string, error) {
 	cover, err := files.ReadAlbumCover(a.Filepath)
 	if err != nil {
-		return ""
+		return "", fmt.Errorf("error reading album cover for %s: %w", a.Title, err)
 	}
-	encodedCover := resizeCover(cover)
-	return encodedCover
+	encodedCover, err := resizeCover(cover)
+	if err != nil {
+		return "", fmt.Errorf("error resizing album cover for %s: %w", a.Title, err)
+	}
+	return encodedCover, nil
 }
 
-func resizeCover(cover image.Image) string {
+func resizeCover(cover image.Image) (string, error) {
 	m := resize.Resize(300, 300, cover, resize.NearestNeighbor)
 	buf := new(bytes.Buffer)
 	if err := jpeg.Encode(buf, m, nil); err != nil {
-		return ""
+		return "", fmt.Errorf("error encoding album cover: %w", err)
 	}
-	return base64.StdEncoding.EncodeToString(buf.Bytes())
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
 func (a Album) calculateLength() time.Duration {

@@ -17,7 +17,7 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 	}
 	existingCatalog, err := db.LoadCatalog()
 	if err != nil {
-		return fmt.Errorf("failed to load catalog: %w", err)
+		return err
 	}
 	scannedAlbums, err := files.FetchDirectories(musicDirPath)
 	if err != nil {
@@ -25,7 +25,10 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 	}
 	scannedAlbumsIDPath := make(map[string]string)
 	for _, albumPath := range scannedAlbums {
-		albumModTime := files.GetModificationTime(albumPath)
+		albumModTime, err := files.GetModificationTime(albumPath)
+		if err != nil {
+			return err
+		}
 		scannedAlbumsIDPath[strings.ToLower(albumPath)+albumModTime] = albumPath
 	}
 	toAdd := make(map[string]string)
@@ -47,7 +50,7 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 	defer tx.Rollback()
 	for id, _ := range toRemove {
 		if err := db.RemoveAlbum(id); err != nil {
-			return fmt.Errorf("Failed to remove album %s: %v", id, err)
+			return fmt.Errorf("failed to remove album %s: %w", id, err)
 		}
 	}
 	for _, fp := range toAdd {

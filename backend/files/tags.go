@@ -1,11 +1,15 @@
 package files
 
-import "go.senan.xyz/taglib"
+import (
+	"fmt"
+
+	"go.senan.xyz/taglib"
+)
 
 func ReadTags(fp string) (map[string][]string, error) {
 	tags, err := taglib.ReadTags(fp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading tags: %v", err)
 	}
 	return tags, nil
 }
