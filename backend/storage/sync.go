@@ -63,37 +63,47 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 }
 
 func SyncCatalogInRealTime(ctx context.Context, w *Watcher) {
-	w.Watch(ctx)
+	w.Watch()
 	go func() {
 		for event := range w.AlbumEvents {
-			tx, err := w.db.Begin()
-			if err != nil {
-				continue
-			}
-			switch event.Type {
-			case "add":
-				album, err := catalog.NewAlbum(event.Path)
-				if err != nil {
-					continue
-				}
-				if err := w.db.saveAlbum(tx, album); err != nil {
-					tx.Rollback()
-					continue
-				}
-				if err := tx.Commit(); err != nil {
-					return
-				}
-				runtime.EventsEmit(ctx, "album:addedOrRemoved")
-			case "remove":
-				if err := w.db.RemoveAlbumByPath(event.Path); err != nil {
-					tx.Rollback()
-					continue
-				}
-				if err := tx.Commit(); err != nil {
-					return
-				}
-				runtime.EventsEmit(ctx, "album:addedOrRemoved")
-			}
+			w.syncEvent(event, ctx)
 		}
 	}()
+}
+
+func (w *Watcher) syncEvent(event AlbumEvent, ctx context.Context) {
+	tx, err := w.db.Begin()
+	if err != nil {
+		fmt.Printf("failed to start db transaction: %v\n", err)
+		return
+	}
+	switch event.Type {
+	case "add":
+		album, err := catalog.NewAlbum(event.Path)
+		if err != nil {
+			fmt.Printf("failed to create new album: %v\n", err)
+			return
+		}
+		if err := w.db.saveAlbum(tx, album); err != nil {
+			tx.Rollback()
+			fmt.Printf("failed to save album: %v\n", err)
+			return
+		}
+		if err := tx.Commit(); err != nil {
+			fmt.Printf("failed to commit db transaction: %v\n", err)
+			return
+		}
+		runtime.EventsEmit(ctx, "album:addedOrRemoved")
+	case "remove":
+		if err := w.db.RemoveAlbumByPath(event.Path); err != nil {
+			tx.Rollback()
+			fmt.Printf("failed to remove album: %v\n", err)
+			return
+		}
+		if err := tx.Commit(); err != nil {
+			fmt.Printf("failed to commit db transaction: %v\n", err)
+			return
+		}
+		runtime.EventsEmit(ctx, "album:addedOrRemoved")
+	}
 }

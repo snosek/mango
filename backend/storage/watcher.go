@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"context"
 	"log"
 	"mango/backend/utils"
 	"os"
@@ -33,35 +32,47 @@ func NewWatcher(db *DB) (*Watcher, error) {
 	return &Watcher{Watcher: w, db: db}, nil
 }
 
-func (w *Watcher) Watch(ctx context.Context) {
+func (w *Watcher) Watch() {
 	w.AlbumEvents = make(chan AlbumEvent)
-	go func() {
-		defer close(w.AlbumEvents)
-		for {
-			select {
-			case event, ok := <-w.Events:
-				if !ok {
-					return
-				}
-				if utils.IsSystemFile(event.Name) {
-					continue
-				}
-				switch {
-				case event.Op&(fsnotify.Create|fsnotify.Write) != 0:
-					if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
-						w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "add"}
-					}
-				case event.Op&fsnotify.Rename != 0:
-					w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "remove"}
-				}
-			case err, ok := <-w.Errors:
-				if !ok {
-					return
-				}
-				log.Printf("Watcher error: %v", err)
+	go w.watchLoop()
+}
+
+func (w *Watcher) watchLoop() {
+	defer close(w.AlbumEvents)
+	for {
+		select {
+		case event, ok := <-w.Events:
+			if !ok {
+				return
 			}
+			w.processEvent(event)
+		case err, ok := <-w.Errors:
+			if !ok {
+				return
+			}
+			log.Printf("watcher error: %v", err)
 		}
-	}()
+	}
+}
+
+func (w *Watcher) processEvent(event fsnotify.Event) {
+	if utils.IsSystemFile(event.Name) {
+		return
+	}
+	switch {
+	case event.Has(fsnotify.Write), event.Has(fsnotify.Create):
+		info, err := os.Stat(event.Name)
+		if err != nil {
+			log.Printf("failed to stat created/written item: %v", err)
+			return
+		}
+		if !info.IsDir() {
+			return
+		}
+		w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "add"}
+	case event.Has(fsnotify.Rename), event.Has(fsnotify.Remove):
+		w.AlbumEvents <- AlbumEvent{Path: event.Name, Type: "remove"}
+	}
 }
 
 func (w *Watcher) Close() error {
