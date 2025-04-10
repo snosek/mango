@@ -3,10 +3,10 @@ package catalog
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
+	"image"
 	"image/jpeg"
-	"mango/backend/utils"
-	"os"
-	"path/filepath"
+	"mango/backend/files"
 	"sort"
 	"strings"
 	"time"
@@ -29,49 +29,58 @@ type Album struct {
 
 func NewAlbum(fp string) (*Album, error) {
 	album := Album{Filepath: fp}
-	tracks, err := album.FetchTracks()
-	if err != nil {
-		return &album, err
+	if err := album.setTracks(); err != nil {
+		return nil, fmt.Errorf("failed setting album tracks: %v", err)
 	}
-	album.Tracks = SortTracks(tracks)
-	album.populateMetadata()
-	album.ModTime = utils.GetModificationTime(album.Filepath)
-	album.ID = strings.ToLower(album.Filepath) + album.ModTime
-	for _, t := range album.Tracks {
-		t.AlbumID = album.ID
+	if err := album.populateMetadata(); err != nil {
+		return nil, fmt.Errorf("failed populating album metadata: %v", err)
 	}
 	return &album, nil
 }
 
-func (a *Album) populateMetadata() {
-	if len(a.Tracks) == 0 {
-		return
-	}
-	tags, err := taglib.ReadTags(a.Tracks[0].Filepath)
+func (a *Album) setTracks() error {
+	tracks, err := a.FetchTracks()
 	if err != nil {
-		return
+		return fmt.Errorf("failed fetching album tracks: %v", err)
 	}
-	a.Title = utils.FirstOrEmpty(tags[taglib.Album])
-	a.Artist = utils.FirstOrFallback(tags[taglib.AlbumArtist], tags[taglib.Artist])
+	a.Tracks = SortTracks(tracks)
+	return nil
+}
+
+func (a *Album) populateMetadata() error {
+	if len(a.Tracks) == 0 {
+		return fmt.Errorf("no tracks in album %v", a.Title)
+	}
+	tags, err := files.ReadTags(a.Tracks[0].Filepath)
+	if err != nil {
+		return fmt.Errorf("failed reading album tags: %v", err)
+	}
+	a.Title = files.FirstOrEmpty(tags[taglib.Album])
+	a.Artist = files.FirstOrFallback(tags[taglib.AlbumArtist], tags[taglib.Artist])
 	a.Genre = tags[taglib.Genre]
 	a.Length = a.calculateLength()
 	a.Cover = a.encodeCover()
+	a.ModTime = files.GetModificationTime(a.Filepath)
+	a.ID = strings.ToLower(a.Filepath) + a.ModTime
+	for _, t := range a.Tracks {
+		t.AlbumID = a.ID
+	}
+	return nil
 }
 
 func (a *Album) encodeCover() string {
-	file, err := os.Open(filepath.Join(a.Filepath, "folder.jpg"))
+	cover, err := files.ReadAlbumCover(a.Filepath)
 	if err != nil {
 		return ""
 	}
-	defer file.Close()
-	cover, err := jpeg.Decode(file)
-	if err != nil {
-		return ""
-	}
+	encodedCover := resizeCover(cover)
+	return encodedCover
+}
+
+func resizeCover(cover image.Image) string {
 	m := resize.Resize(300, 300, cover, resize.NearestNeighbor)
 	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, m, nil)
-	if err != nil {
+	if err := jpeg.Encode(buf, m, nil); err != nil {
 		return ""
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes())
@@ -86,7 +95,7 @@ func (a Album) calculateLength() time.Duration {
 }
 
 func (a Album) FetchTracks() ([]*Track, error) {
-	trackPaths, err := utils.FetchAudioFiles(a.Filepath)
+	trackPaths, err := files.FetchAudioFiles(a.Filepath)
 	if err != nil {
 		return nil, err
 	}

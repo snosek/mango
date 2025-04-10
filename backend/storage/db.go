@@ -271,3 +271,12 @@ func (db *DB) RemoveAlbumByPath(albumPath string) error {
 	}
 	return db.RemoveAlbum(albumID)
 }
+
+func GetMusicDirPath(db *sql.DB) string {
+	var musicDirPath string
+	err := db.QueryRow(`SELECT musicDirPath FROM config;`).Scan(&musicDirPath)
+	if err != nil {
+		return ""
+	}
+	return musicDirPath
+}

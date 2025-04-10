@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"mango/backend/catalog"
+	"mango/backend/files"
 	"mango/backend/player"
 	"mango/backend/storage"
 	"mango/backend/utils"
@@ -67,7 +68,7 @@ func (a *App) GetDirPath() (string, error) {
 }
 
 func (a *App) GetAlbums(fp string) ([]string, error) {
-	return utils.FetchDirectories(fp)
+	return files.FetchDirectories(fp)
 }
 
 func (a *App) GetAlbum(fp string) catalog.Album {
@@ -153,7 +154,7 @@ func (a *App) GetMusicDirPath() string {
 	if a.DB == nil {
 		return ""
 	}
-	return utils.GetMusicDirPath(a.DB.DB)
+	return storage.GetMusicDirPath(a.DB.DB)
 }
 
 func (a *App) IsDBAvailable() bool {

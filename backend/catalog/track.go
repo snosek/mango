@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"fmt"
+	"mango/backend/files"
 	"mango/backend/utils"
 	"path"
 	"strconv"
@@ -35,7 +36,7 @@ func (t *Track) populateMetadata(optionalTrackNum int) {
 		return
 	}
 
-	t.Title = utils.FirstOrFallback(tags[taglib.Title], []string{strings.TrimSuffix(path.Base(t.Filepath), path.Ext(t.Filepath))})[0]
+	t.Title = files.FirstOrFallback(tags[taglib.Title], []string{strings.TrimSuffix(path.Base(t.Filepath), path.Ext(t.Filepath))})[0]
 	t.Artist = tags[taglib.Artist]
 	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber], optionalTrackNum)
 

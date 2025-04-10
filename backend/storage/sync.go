@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mango/backend/catalog"
-	"mango/backend/utils"
+	"mango/backend/files"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -19,13 +19,13 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to load catalog: %w", err)
 	}
-	scannedAlbums, err := utils.FetchDirectories(musicDirPath)
+	scannedAlbums, err := files.FetchDirectories(musicDirPath)
 	if err != nil {
 		return err
 	}
 	scannedAlbumsIDPath := make(map[string]string)
 	for _, albumPath := range scannedAlbums {
-		albumModTime := utils.GetModificationTime(albumPath)
+		albumModTime := files.GetModificationTime(albumPath)
 		scannedAlbumsIDPath[strings.ToLower(albumPath)+albumModTime] = albumPath
 	}
 	toAdd := make(map[string]string)

@@ -2,9 +2,6 @@ package utils
 
 import (
 	"context"
-	"database/sql"
-	"os"
-	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -13,55 +10,8 @@ func GetDirPath(ctx context.Context) (string, error) {
 	return runtime.OpenDirectoryDialog(ctx, runtime.OpenDialogOptions{})
 }
 
-func FetchDirectories(fp string) ([]string, error) {
-	entries, err := os.ReadDir(fp)
-	if err != nil {
-		return nil, err
-	}
-	var dirs []string
-	for _, f := range entries {
-		if f.IsDir() {
-			dirs = append(dirs, filepath.Join(fp, f.Name()))
-		}
-	}
-	return dirs, nil
-}
-
-func FetchAudioFiles(dirPath string) ([]string, error) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return nil, err
-	}
-	var audioFiles []string
-	for _, f := range entries {
-		if isAudioFile(f.Name()) {
-			audioFiles = append(audioFiles, filepath.Join(dirPath, f.Name()))
-		}
-	}
-	return audioFiles, nil
-}
-
-func isAudioFile(fileName string) bool {
-	ext := filepath.Ext(fileName)
-	return ext == ".flac" || ext == ".mp3" || ext == ".wav" || ext == ".ogg"
-}
-
 func IsValidCtrlRequest(r string) bool {
 	return r == "pause" || r == "resume" || r == "next" || r == "previous" || r == "changePosition" || r == "playTrack"
-}
-
-func FirstOrEmpty(s []string) string {
-	if len(s) > 0 {
-		return s[0]
-	}
-	return ""
-}
-
-func FirstOrFallback(primary, fallback []string) []string {
-	if len(primary) > 0 {
-		return primary
-	}
-	return fallback
 }
 
 func Hash(title string) string {
@@ -86,53 +36,4 @@ func fnv64a(s string) []byte {
 	b[6] = byte(hash >> 8)
 	b[7] = byte(hash)
 	return b
-}
-
-func GetModificationTime(fp string) string {
-	albumDir, err := os.Open(fp)
-	if err != nil {
-		return ""
-	}
-	defer albumDir.Close()
-	albumDirStat, err := albumDir.Stat()
-	if err != nil {
-		return ""
-	}
-	albumModTime := albumDirStat.ModTime()
-	return albumModTime.String()
-}
-
-func GetMusicDirPath(db *sql.DB) string {
-	var musicDirPath string
-	err := db.QueryRow(`SELECT musicDirPath FROM config;`).Scan(&musicDirPath)
-	if err != nil {
-		return ""
-	}
-	return musicDirPath
-}
-
-var systemFilePatterns = []string{
-	".DS_Store",
-	"._*",
-	".Trash*",
-	".fseventsd",
-	".Spotlight-V100",
-	".TemporaryItems",
-	".apdisk",
-	"Thumbs.db",
-	"desktop.ini",
-	"$RECYCLE.BIN",
-	".Trash-1000",
-	".nfs*",
-}
-
-func IsSystemFile(fp string) bool {
-	fileBase := filepath.Base(fp)
-	for _, pattern := range systemFilePatterns {
-		matched, _ := filepath.Match(pattern, fileBase)
-		if matched {
-			return true
-		}
-	}
-	return false
 }

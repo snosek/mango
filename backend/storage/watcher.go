@@ -2,7 +2,7 @@ package storage
 
 import (
 	"log"
-	"mango/backend/utils"
+	"mango/backend/files"
 	"os"
 
 	"github.com/fsnotify/fsnotify"
@@ -24,7 +24,7 @@ func NewWatcher(db *DB) (*Watcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	fp := utils.GetMusicDirPath(db.DB)
+	fp := GetMusicDirPath(db.DB)
 	err = w.Add(fp)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (w *Watcher) watchLoop() {
 }
 
 func (w *Watcher) processEvent(event fsnotify.Event) {
-	if utils.IsSystemFile(event.Name) {
+	if files.IsSystemFile(event.Name) {
 		return
 	}
 	switch {

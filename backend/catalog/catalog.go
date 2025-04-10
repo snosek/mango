@@ -2,7 +2,7 @@ package catalog
 
 import (
 	"errors"
-	"mango/backend/utils"
+	"mango/backend/files"
 )
 
 type Catalog struct {
@@ -15,7 +15,7 @@ func NewCatalog(fp string) (Catalog, error) {
 		return Catalog{}, errors.New("empty music directory path")
 	}
 	catalog := Catalog{Filepath: fp}
-	dirs, err := utils.FetchDirectories(fp)
+	dirs, err := files.FetchDirectories(fp)
 	if err != nil {
 		return catalog, err
 	}
