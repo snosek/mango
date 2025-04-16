@@ -1,6 +1,7 @@
 package files
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -84,7 +85,7 @@ var systemFilePatterns = []string{
 func ReadAlbumCover(fp string) (image.Image, error) {
 	file, err := os.Open(filepath.Join(fp, "folder.jpg"))
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return image.Image(image.NewRGBA(image.Rect(0, 0, 300, 300))), nil
 		}
 		return nil, fmt.Errorf("error opening file: %w", err)
