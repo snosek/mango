@@ -24,9 +24,6 @@ jobs:
             platform:  'windows/amd64'
             os: 'windows-latest'
           - name: 'App'
-            platform:  'windows/arm64'
-            os: 'windows-latest'
-          - name: 'App'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
