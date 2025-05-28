@@ -1,75 +1,69 @@
-name: Build and Release Wails App
+name: Wails Build and Release
 
 on:
   push:
     branches:
       - github-actions-test
 
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [amd64, arm64]
+        build:
+          - name: 'App'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'linux/arm64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'windows/arm64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
 
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ${{ matrix.build.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4 
         with:
-          go-version: '1.23'
+          submodules: recursive
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install Linux dependencies (libasound2-dev)
+        if: ${{ matrix.build.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+
+      - name: Build Wails application
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
         with:
-          node-version: '22'
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: false
+          go-version: '1.20'
 
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
-      - name: Install Frontend Dependencies and Build
-        run: |
-          cd frontend
-          npm install
-          npm run build
-
-      - name: Build Wails Application
-        env:
-          GOOS_ENV: ${{ (matrix.os == 'ubuntu-latest' && 'linux') || (matrix.os == 'windows-latest' && 'windows') || (matrix.os == 'macos-latest' && 'darwin') }}
-          GOARCH_ENV: ${{ matrix.arch }}
-        run: |
-          BUILD_CMD="wails build -platform ${{ env.GOOS_ENV }}/${{ env.GOARCH_ENV }}"
-
-          # Specific handling for macOS ARM64 on x86_64 runner if needed
-          if [ "${{ matrix.os }}" == "macos-latest" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-            echo "Attempting to build macOS ARM64 on x86_64 runner. This might have limitations."
-            # The previous line: `GOOS=darwin GOARCH=arm64 wails build -platform darwin/arm64`
-            # might be more explicit. Wails usually handles these based on -platform.
-            # However, for true ARM64 on macos-latest, direct build is best for amd64.
-            # For arm64, cross-compilation reliability depends heavily on your specific Wails app's Cgo dependencies.
-            # For most Wails apps without heavy Cgo, setting GOOS/GOARCH and using -platform should work.
-            echo "Skipping macOS ARM64 build on macos-latest for now due to runner architecture mismatch."
-            echo "Consider building darwin/amd64 (runs via Rosetta) or using a self-hosted ARM runner."
-            exit 0 # Skip this specific combination for now if you prefer not to attempt cross-compilation
-          fi
-
-          echo "Running build command: $BUILD_CMD"
-          $BUILD_CMD
-
-      - name: Upload Artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-build
+          name: ${{ matrix.build.name }}-${{ matrix.build.platform }}
           path: build/bin/*
 
   release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
 
     steps:
       - name: Download all build artifacts
@@ -77,12 +71,12 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/*-build/* # This will pick up all os-arch builds
-          draft: false
-          prerelease: false
+            artifacts/*/* # This pattern picks up all files from subdirectories within 'artifacts'
+          draft: false      
+          prerelease: false 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
