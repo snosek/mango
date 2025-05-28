@@ -53,10 +53,23 @@ jobs:
           go-version: '1.23'
           node-version: '22.14'
 
+      - name: Prepare artifact name
+        id: prepare_name
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+              $platform_name = "${{ matrix.build.platform }}"
+              $artifact_name = "${{ matrix.build.name }}-" + $platform_name.Replace("/", "-")
+              echo "artifact_name=$artifact_name" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+          else
+              artifact_name=$(echo "${{ matrix.build.name }}-${{ matrix.build.platform }}" | tr '/' '-')
+              echo "artifact_name=$artifact_name" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.build.name }}-${{ matrix.build.platform }}
+          name: ${{ steps.prepare_name.outputs.artifact_name }}
           path: build/bin/*
 
   release:
