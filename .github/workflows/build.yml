@@ -75,7 +75,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/*/* # This pattern picks up all files from subdirectories within 'artifacts'
+            artifacts/*/*
           draft: false      
           prerelease: false 
         env:
