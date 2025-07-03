@@ -47,6 +47,26 @@ func (a *Album) setTracks() error {
 	return nil
 }
 
+func (a Album) FetchTracks() ([]*Track, error) {
+	trackPaths, err := files.FetchAudioFiles(a.Filepath)
+	if err != nil {
+		return nil, err
+	}
+	tracks := []*Track{}
+	for fallbackTrackNum, fp := range trackPaths {
+		t := NewTrack(fp, fallbackTrackNum)
+		tracks = append(tracks, &t)
+	}
+	return tracks, nil
+}
+
+func SortTracks(tracks []*Track) []*Track {
+	sort.SliceStable(tracks, func(i, j int) bool {
+		return tracks[i].TrackNumber < tracks[j].TrackNumber
+	})
+	return tracks
+}
+
 func (a *Album) populateMetadata() error {
 	if len(a.Tracks) == 0 {
 		return fmt.Errorf("no tracks in album %v", a.Title)
@@ -67,7 +87,7 @@ func (a *Album) populateMetadata() error {
 	if err != nil {
 		return fmt.Errorf("error getting modification time for %s: %w", a.Title, err)
 	}
-	a.ID = strings.ToLower(a.Filepath) + a.ModTime
+	a.ID = CreateAlbumID(a.Filepath, a.ModTime)
 	for _, t := range a.Tracks {
 		t.AlbumID = a.ID
 	}
@@ -103,22 +123,6 @@ func (a Album) calculateLength() time.Duration {
 	return total
 }
 
-func (a Album) FetchTracks() ([]*Track, error) {
-	trackPaths, err := files.FetchAudioFiles(a.Filepath)
-	if err != nil {
-		return nil, err
-	}
-	tracks := []*Track{}
-	for optionalTrackNum, fp := range trackPaths {
-		t := NewTrack(fp, optionalTrackNum)
-		tracks = append(tracks, &t)
-	}
-	return tracks, nil
-}
-
-func SortTracks(tracks []*Track) []*Track {
-	sort.SliceStable(tracks, func(i, j int) bool {
-		return tracks[i].TrackNumber < tracks[j].TrackNumber
-	})
-	return tracks
+func CreateAlbumID(fp, modTime string) string {
+	return strings.ToLower(fp) + modTime
 }

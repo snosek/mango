@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mango/backend/catalog"
 	"mango/backend/files"
-	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -29,7 +28,7 @@ func SyncCatalog(db *DB, musicDirPath string) error {
 		if err != nil {
 			return err
 		}
-		scannedAlbumsIDPath[strings.ToLower(albumPath)+albumModTime] = albumPath
+		scannedAlbumsIDPath[catalog.CreateAlbumID(albumPath, albumModTime)] = albumPath
 	}
 	toAdd := make(map[string]string)
 	toRemove := make(map[string]string)

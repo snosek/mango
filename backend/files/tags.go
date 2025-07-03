@@ -21,9 +21,9 @@ func FirstOrEmpty(s []string) string {
 	return ""
 }
 
-func FirstOrFallback(primary, fallback []string) []string {
-	if len(primary) > 0 {
-		return primary
+func FirstOrFallback(first, fallback []string) []string {
+	if len(first) > 0 {
+		return first
 	}
 	return fallback
 }

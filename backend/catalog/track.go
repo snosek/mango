@@ -23,14 +23,14 @@ type Track struct {
 	Filepath    string
 }
 
-func NewTrack(fp string, optionalTrackNum int) Track {
+func NewTrack(fp string, fallbackTrackNum int) Track {
 	t := Track{Filepath: fp}
-	t.populateMetadata(optionalTrackNum)
+	t.populateMetadata(fallbackTrackNum)
 	t.ID = utils.Hash(t.Title + fmt.Sprintf("%v", t.TrackNumber))
 	return t
 }
 
-func (t *Track) populateMetadata(optionalTrackNum int) {
+func (t *Track) populateMetadata(fallbackTrackNum int) {
 	tags, err := taglib.ReadTags(t.Filepath)
 	if err != nil {
 		return
@@ -38,7 +38,7 @@ func (t *Track) populateMetadata(optionalTrackNum int) {
 
 	t.Title = files.FirstOrFallback(tags[taglib.Title], []string{strings.TrimSuffix(path.Base(t.Filepath), path.Ext(t.Filepath))})[0]
 	t.Artist = tags[taglib.Artist]
-	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber], optionalTrackNum)
+	t.TrackNumber = parseTrackNumber(tags[taglib.TrackNumber], fallbackTrackNum)
 
 	props, err := taglib.ReadProperties(t.Filepath)
 	if err == nil {
@@ -47,13 +47,13 @@ func (t *Track) populateMetadata(optionalTrackNum int) {
 	}
 }
 
-func parseTrackNumber(nums []string, optionalTrackNum int) uint {
+func parseTrackNumber(nums []string, fallbackTrackNum int) uint {
 	if len(nums) == 0 {
-		return uint(optionalTrackNum)
+		return uint(fallbackTrackNum)
 	}
 	num, err := strconv.Atoi(nums[0])
 	if err != nil {
-		return uint(optionalTrackNum)
+		return uint(fallbackTrackNum)
 	}
 	return uint(num)
 }
